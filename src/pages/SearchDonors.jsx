@@ -1,44 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import { FaSearchLocation, FaTint, FaMapMarkerAlt, FaMapMarkedAlt, FaHome,FaEnvelope,FaUser } from 'react-icons/fa';
+import { FaSearchLocation, FaTint, FaMapMarkerAlt, FaMapMarkedAlt, FaHome, FaEnvelope, FaUser } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
-
+import { useQuery } from '@tanstack/react-query';
 
 const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
 const SearchDonor = () => {
   const navigate = useNavigate();
-  const [districts, setDistricts] = useState([]);
-  const [upazilasData, setUpazilasData] = useState([]);
-  const [availableUpazilas, setAvailableUpazilas] = useState([]);
-
   const [filters, setFilters] = useState({
     bloodGroup: '',
     district: '',
     upazila: '',
   });
 
-  const [donors, setDonors] = useState([]);
+  const [availableUpazilas, setAvailableUpazilas] = useState([]);
   const [searched, setSearched] = useState(false);
+  const [donors, setDonors] = useState([]);
+
+ 
+  const { data: districts = [] } = useQuery({
+    queryKey: ['districts'],
+    queryFn: async () => {
+      const res = await fetch('/assets/districts.json');
+      return res.json();
+    },
+  });
+
+ 
+  const { data: upazilasData = [] } = useQuery({
+    queryKey: ['upazilas'],
+    queryFn: async () => {
+      const res = await fetch('/assets/upazilas.json');
+      return res.json();
+    },
+  });
 
   useEffect(() => {
-    const fetchLocationData = async () => {
-      try {
-        const d = await fetch('/assets/districts.json').then(res => res.json());
-        const u = await fetch('/assets/upazilas.json').then(res => res.json());
-        setDistricts(d);
-        setUpazilasData(u);
-      } catch (error) {
-        Swal.fire('Error loading location data');
-      }
-    };
-    fetchLocationData();
-  }, []);
-
-  useEffect(() => {
-    if (filters.district) {
+    if (filters.district && districts.length && upazilasData.length) {
       const selectedDistrict = districts.find(d => d.name === filters.district);
       const upz = upazilasData.filter(u => parseInt(u.district_id) === parseInt(selectedDistrict?.id));
       setAvailableUpazilas(upz.map(u => u.name));
@@ -143,87 +144,73 @@ const SearchDonor = () => {
         </div>
 
         {/* Result Section */}
-{searched && donors.length > 0 && (
-  <div className="mt-12">
-    <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-4">Search Results</h3>
+        {searched && donors.length > 0 && (
+          <div className="mt-12">
+            <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-4">Search Results</h3>
 
-    {/* Table View for md+ */}
-    <div className="hidden md:block overflow-x-auto">
-  <table className="min-w-full table-auto border-collapse table-zebra border text-sm md:text-base">
-    <thead className="bg-red-100 text-red-800">
-      <tr>
-        <th className="px-4 py-2 text-left">#</th>
-        <th className="px-4 py-2 text-left">Name</th>
-        <th className="px-4 py-2 text-left">Blood Group</th>
-        <th className="px-4 py-2 text-left">Location</th>
-        <th className="px-4 py-2 text-left">Photo</th>
-        <th className="px-4 py-2 text-left">Email</th>
-      </tr>
-    </thead>
-    <tbody>
-      {donors.map((donor, i) => (
-        <tr key={i} className="border-t">
-          <td className="px-4 py-2">{i + 1}</td>
-          <td className="px-4 py-2">{donor.name}</td>
-          <td className="px-4 py-2 font-bold text-red-600">{donor.bloodGroup}</td>
-          <td className="px-4 py-2">{donor.upazila}, {donor.district}</td>
-          <td className="px-4 py-2">
-            <img src={donor.photoURL} alt={donor.name} className="w-10 h-10 rounded-full" />
-          </td>
-          <td className="px-4 py-2">
-            <a
-              href={`https://mail.google.com/mail/?view=cm&fs=1&to=${donor.email}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:underline"
-            >
-              {donor.email}
-            </a>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
+            {/* Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="min-w-full table-auto border-collapse table-zebra border text-sm md:text-base">
+                <thead className="bg-red-100 text-red-800">
+                  <tr>
+                    <th className="px-4 py-2 text-left">#</th>
+                    <th className="px-4 py-2 text-left">Name</th>
+                    <th className="px-4 py-2 text-left">Blood Group</th>
+                    <th className="px-4 py-2 text-left">Location</th>
+                    <th className="px-4 py-2 text-left">Photo</th>
+                    <th className="px-4 py-2 text-left">Email</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {donors.map((donor, i) => (
+                    <tr key={i} className="border-t">
+                      <td className="px-4 py-2">{i + 1}</td>
+                      <td className="px-4 py-2">{donor.name}</td>
+                      <td className="px-4 py-2 font-bold text-red-600">{donor.bloodGroup}</td>
+                      <td className="px-4 py-2">{donor.upazila}, {donor.district}</td>
+                      <td className="px-4 py-2">
+                        <img src={donor.photoURL} alt={donor.name} className="w-10 h-10 rounded-full" />
+                      </td>
+                      <td className="px-4 py-2">
+                        <a href={`https://mail.google.com/mail/?view=cm&fs=1&to=${donor.email}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                          {donor.email}
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
+            {/* Card View for Mobile */}
+            <div className="md:hidden space-y-4">
+              {donors.map((donor, i) => (
+                <div key={i} className="border rounded-lg p-4 shadow-md bg-white">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2 text-red-700 font-semibold text-base">
+                      <FaUser /> {donor.name}
+                    </div>
+                    <div className="text-sm bg-red-100 text-red-600 px-2 py-1 rounded flex items-center gap-1">
+                      <FaTint /> {donor.bloodGroup}
+                    </div>
+                  </div>
 
-    
-    {/* Card View for mobile only */}
-<div className="md:hidden space-y-4">
-  {donors.map((donor, i) => (
-    <div key={i} className="border rounded-lg p-4 shadow-md bg-white">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2 text-red-700 font-semibold text-base">
-          <FaUser /> {donor.name}
-        </div>
-        <div className="text-sm bg-red-100 text-red-600 px-2 py-1 rounded flex items-center gap-1">
-          <FaTint /> {donor.bloodGroup}
-        </div>
-      </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-700 mb-2">
+                    <FaMapMarkerAlt className="text-green-600" />
+                    <span>{donor.upazila}, {donor.district}</span>
+                  </div>
 
-      <div className="flex items-center gap-2 text-sm text-gray-700 mb-2">
-        <FaMapMarkerAlt className="text-green-600" />
-        <span>{donor.upazila}, {donor.district}</span>
-      </div>
-
-      <div className="flex items-center gap-3 mb-2">
-        <img src={donor.photoURL} alt={donor.name} className="w-12 h-12 rounded-full" />
-        <a
-          href={`https://mail.google.com/mail/?view=cm&fs=1&to=${donor.email}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2 text-blue-600 hover:underline text-sm"
-        >
-          <FaEnvelope /> {donor.email}
-        </a>
-      </div>
-    </div>
-  ))}
-</div>
-
-  </div>
-)}
-
+                  <div className="flex items-center gap-3 mb-2">
+                    <img src={donor.photoURL} alt={donor.name} className="w-12 h-12 rounded-full" />
+                    <a href={`https://mail.google.com/mail/?view=cm&fs=1&to=${donor.email}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:underline text-sm">
+                      <FaEnvelope /> {donor.email}
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

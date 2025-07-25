@@ -24,6 +24,14 @@ const Home = () => {
     e.target.reset();
   };
 
+  const handleAlreadyDonor = () => {
+    Swal.fire({
+      icon: 'info',
+      title: 'You are already a donor!',
+      confirmButtonColor: '#dc2626',
+    });
+  };
+
   return (
     <div className="text-gray-800">
       {/* Banner */}
@@ -39,12 +47,12 @@ const Home = () => {
             Be a Lifesaver, <br /> Donate Blood Today
           </h1>
           <div className="flex gap-4">
-            <a
-              href="/auth/register"
+            <button
+              onClick={handleAlreadyDonor}
               className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full flex items-center gap-2 transition"
             >
               <FaUserPlus /> Join as a Donor
-            </a>
+            </button>
             <a
               href="/search"
               className="border-2 border-red-600 text-red-600 px-6 py-3 rounded-full flex items-center gap-2 hover:bg-red-600 hover:text-white transition"
@@ -72,10 +80,7 @@ const Home = () => {
       </section>
 
       {/* Why Donate Section */}
-      <motion.section
-        className="py-16 px-4 md:px-20 bg-white"
-        {...fadeUp}
-      >
+      <motion.section className="py-16 px-4 md:px-20 bg-white" {...fadeUp}>
         <h2 className="text-3xl font-bold text-center text-red-600 mb-10">Why Donate Blood?</h2>
         <div className="grid md:grid-cols-3 gap-8 text-center">
           <motion.div className="p-6 bg-red-50 rounded-xl shadow-md hover:shadow-lg transition" {...fadeUp}>
@@ -99,11 +104,7 @@ const Home = () => {
       </motion.section>
 
       {/* Contact Section */}
-      <motion.section
-        className="bg-gray-100 py-16 px-4"
-        id="contact"
-        {...fadeUp}
-      >
+      <motion.section className="bg-gray-100 py-16 px-4" id="contact" {...fadeUp}>
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           {/* Contact Info */}
           <motion.div {...fadeUp}>

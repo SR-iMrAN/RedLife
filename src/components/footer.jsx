@@ -1,11 +1,24 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useState } from 'react';
-import { FaHome, FaBlog, FaTint, FaUser, FaUserPlus, FaLink, FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
+import { useState, useContext } from 'react';
+import {
+  FaHome,
+  FaBlog,
+  FaTint,
+  FaUser,
+  FaUserPlus,
+  FaLink,
+  FaFacebook,
+  FaTwitter,
+  FaInstagram,
+  FaLinkedin,
+} from 'react-icons/fa';
 import { MdDashboard } from 'react-icons/md';
 import Swal from 'sweetalert2';
+import { AuthContext } from '../provider/AuthProvider';
 
 const Footer = () => {
   const location = useLocation();
+  const { user } = useContext(AuthContext); 
 
   const isActive = (path) => location.pathname === path;
 
@@ -14,7 +27,6 @@ const Footer = () => {
       isActive(path) ? 'text-red-600 font-semibold' : 'text-gray-700'
     }`;
 
-  // SweetAlert popup handler
   const showAlert = (title, text) => {
     Swal.fire({
       title,
@@ -32,11 +44,6 @@ const Footer = () => {
         {/* Logo & Tagline */}
         <div>
           <div className="flex items-center gap-3 mb-2">
-            {/* <img
-              src=""
-              alt="RedLife Logo"
-              className="h-12"
-            /> */}
             <span className="text-2xl font-bold text-red-600">RedLife</span>
           </div>
           <p className="text-sm">
@@ -63,11 +70,6 @@ const Footer = () => {
                 <FaBlog /> Health Blogs
               </Link>
             </li>
-            <li>
-              <Link to="/profile" className={linkClass('/profile')}>
-                <FaUser /> My Profile
-              </Link>
-            </li>
           </ul>
         </div>
 
@@ -75,11 +77,13 @@ const Footer = () => {
         <div>
           <h3 className="text-md font-semibold text-red-700 mb-3">Useful Links</h3>
           <ul className="space-y-2">
-            <li>
-              <Link to="/auth/register" className={linkClass('/auth/register')}>
-                <FaUserPlus /> Become a Donor
-              </Link>
-            </li>
+            {!user && ( 
+              <li>
+                <Link to="/auth/register" className={linkClass('/auth/register')}>
+                  <FaUserPlus /> Become a Donor
+                </Link>
+              </li>
+            )}
             <li>
               <button
                 type="button"
@@ -163,7 +167,7 @@ const Footer = () => {
         </a>
       </div>
 
-      {/* Bottom copyright */}
+      {/* Copyright */}
       <div className="text-center text-xs text-gray-500 mt-8">
         &copy; {new Date().getFullYear()} RedLife. All rights reserved.
       </div>

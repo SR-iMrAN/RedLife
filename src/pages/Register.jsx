@@ -5,6 +5,7 @@ import Swal from 'sweetalert2';
 import { AuthContext } from '../provider/AuthProvider';
 import { motion } from 'framer-motion';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import { useQuery } from '@tanstack/react-query';
 
 const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
@@ -34,40 +35,47 @@ const Register = () => {
   const location = useLocation();
   const from = location.state?.from?.pathname || '/';
 
-  useEffect(() => {
-    const loadLocationData = async () => {
-      try {
-        const districtsData = await fetch('/assets/districts.json').then(res => res.json());
-        const upazilas = await fetch('/public/assets/upazilas.json').then(res => res.json());
-        setDistricts(districtsData);
-        setUpazilasData(upazilas);
-      } catch (error) {
-        console.error('Error loading location data:', error);
-        Swal.fire({ icon: 'error', title: 'Failed to load location data' });
-      }
-    };
-    loadLocationData();
-  }, []);
+  const { data: districtsData = [], isError: districtError } = useQuery({
+    queryKey: ['districts'],
+    queryFn: () =>
+      fetch('/assets/districts.json').then(res => {
+        if (!res.ok) throw new Error('Failed to fetch districts');
+        return res.json();
+      }),
+  });
 
-useEffect(() => {
-  if (formData.district) {
-    const selectedDistrict = districts.find(d => d.name === formData.district);
-    if (selectedDistrict) {
-      const filteredUpazilas = upazilasData.filter(
-        upz => parseInt(upz.district_id) === parseInt(selectedDistrict.id)
-      );
-      setAvailableUpazilas(filteredUpazilas.map(u => u.name));
-      setFormData(prev => ({ ...prev, upazila: '' }));
+  const { data: upazilas = [], isError: upazilaError } = useQuery({
+    queryKey: ['upazilas'],
+    queryFn: () =>
+      fetch('/public/assets/upazilas.json').then(res => {
+        if (!res.ok) throw new Error('Failed to fetch upazilas');
+        return res.json();
+      }),
+  });
+
+  useEffect(() => {
+    setDistricts(districtsData);
+    setUpazilasData(upazilas);
+  }, [districtsData, upazilas]);
+
+  useEffect(() => {
+    if (formData.district) {
+      const selectedDistrict = districts.find(d => d.name === formData.district);
+      if (selectedDistrict) {
+        const filteredUpazilas = upazilasData.filter(
+          upz => parseInt(upz.district_id) === parseInt(selectedDistrict.id)
+        );
+        setAvailableUpazilas(filteredUpazilas.map(u => u.name));
+        setFormData(prev => ({ ...prev, upazila: '' }));
+      } else {
+        setAvailableUpazilas([]);
+        setFormData(prev => ({ ...prev, upazila: '' }));
+      }
     } else {
       setAvailableUpazilas([]);
       setFormData(prev => ({ ...prev, upazila: '' }));
     }
-  } else {
-    setAvailableUpazilas([]);
-    setFormData(prev => ({ ...prev, upazila: '' }));
-  }
-}, [formData.district, upazilasData, districts]);
-
+  }, [formData.district, upazilasData, districts]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -178,26 +186,26 @@ useEffect(() => {
         <div className="w-full md:w-1/2 p-8">
           <h2 className="text-3xl font-bold text-gray-800 mb-6">Create Account</h2>
           <form onSubmit={handleSubmit} className="space-y-4 text-gray-700 font-semibold">
-            <div>
-              <label className="block mb-1">Full Name</label>
-              <input type="text" name="name" value={formData.name} onChange={handleChange} className="input input-bordered w-full" required />
-            </div>
-            <div>
+            <label className="block mb-1">Full Name </label>
+            <input type="text" name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} className="w-full px-4 py-2 border rounded" required />
+            
+             <div>
               <label className="block mb-1">Email Address</label>
               <input type="email" name="email" value={formData.email} onChange={handleChange} className="input input-bordered w-full" required />
             </div>
             <div>
               <label className="block mb-1">Avatar URL or Upload</label>
-              <input type="text" name="photoURL" value={formData.photoURL} onChange={handleChange} placeholder="Paste image URL or upload file below" className="input input-bordered w-full mb-2" />
-              <input type="file" name="photoFile" accept="image/*" onChange={handleChange} className="file-input file-input-bordered w-full" />
+               <input type="file" name="photoFile" accept="image/*" onChange={handleChange} className="file-input file-input-bordered w-full my-1" />
+              <input type="text" name="photoURL" value={formData.photoURL} onChange={handleChange} placeholder="Paste image URL(optional) or upload file below" className="input input-bordered w-full mb-2" />
+             
             </div>
-            <div>
-              <label className="block mb-1">Blood Group</label>
-              <select name="bloodGroup" value={formData.bloodGroup} onChange={handleChange} className="select select-bordered w-full" required>
-                <option value="" disabled>Select Blood Group</option>
-                {bloodGroups.map((bg, index) => <option key={bg + index} value={bg}>{bg}</option>)}
-              </select>
-            </div>
+            <label className="block mb-1">Blood Group </label>
+            <select name="bloodGroup" value={formData.bloodGroup} onChange={handleChange} required className="w-full px-4 py-2 border rounded">
+              <option value="">Select Blood Group</option>
+              {bloodGroups.map(group => (
+                <option key={group} value={group}>{group}</option>
+              ))}
+            </select>
             <div>
               <label className="block mb-1">District</label>
               <select name="district" value={formData.district} onChange={handleChange} className="select select-bordered w-full" required>
@@ -214,26 +222,18 @@ useEffect(() => {
                 ))}
               </select>
             </div>
-            <div>
-              <label className="block mb-1">Password</label>
-              <div className="relative">
-                <input type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleChange} className="input input-bordered w-full pr-12" required />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-xl text-gray-600" onClick={() => setShowPassword(!showPassword)}>
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
-                </span>
-              </div>
+            <div className="relative">
+              <label className="block mb-1">Password </label>
+              <input type={showPassword ? 'text' : 'password'} name="password" placeholder="Password" value={formData.password} onChange={handleChange} className="w-full px-4 py-2 border rounded" required />
+              <span onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3 cursor-pointer">{showPassword ? <FaEyeSlash /> : <FaEye />}</span>
             </div>
-            <div>
-              <label className="block mb-1">Confirm Password</label>
-              <div className="relative">
-                <input type={showConfirmPassword ? 'text' : 'password'} name="confirm_password" value={formData.confirm_password} onChange={handleChange} className="input input-bordered w-full pr-12" required />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-xl text-gray-600" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                  {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-                </span>
-              </div>
+            <div className="relative">
+              <label className="block mb-1">Confirm Password </label>
+              <input type={showConfirmPassword ? 'text' : 'password'} name="confirm_password" placeholder="Confirm Password" value={formData.confirm_password} onChange={handleChange} className="w-full px-4 py-2 border rounded" required />
+              <span onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-3 cursor-pointer">{showConfirmPassword ? <FaEyeSlash /> : <FaEye />}</span>
             </div>
-            <button type="submit" className="btn btn-primary w-full mt-4" disabled={uploading}>
-              {uploading ? 'Registering...' : 'Register'}
+            <button type="submit" disabled={uploading} className="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600">
+              {uploading ? 'Uploading...' : 'Register'}
             </button>
           </form>
         </div>
