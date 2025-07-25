@@ -1,17 +1,26 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { FaHome, FaEdit, FaTrash, FaEye, FaCheck, FaTimes } from "react-icons/fa";
+import {
+  FaHome,
+  FaEdit,
+  FaTrash,
+  FaEye,
+  FaCheck,
+  FaTimes,
+  FaExclamationCircle,
+} from "react-icons/fa";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import useAuth from "../../hooks/useAuth";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 const DashboardHome = () => {
   const { user } = useAuth();
   const axiosSecure = useAxiosSecure();
 
-  const { data: requests = [], refetch } = useQuery({
+  const { data: requests = [], refetch, isLoading } = useQuery({
     queryKey: ["donorRecentRequests", user?.email],
     queryFn: async () => {
       const res = await axiosSecure.get(`/donations/my-recent`);
@@ -54,7 +63,7 @@ const DashboardHome = () => {
         <FaHome /> Welcome, {user?.displayName}
       </h2>
 
-      {requests.length > 0 && (
+      {requests.length > 0 ? (
         <>
           <h3 className="text-xl font-semibold">Your Recent Donation Requests</h3>
           <div className="overflow-x-auto">
@@ -128,6 +137,21 @@ const DashboardHome = () => {
             View My All Requests
           </Link>
         </>
+      ) : (
+        !isLoading && (
+          <div className="flex flex-col items-center justify-center gap-4 mt-10">
+            <div className="w-">
+              <DotLottieReact
+                src="https://lottie.host/05c3cfc3-1126-4ba3-8912-727c1bc0ed12/S9zhRx3laF.lottie"
+                loop
+                autoplay
+              />
+            </div>
+            {/* <p className="text-lg font-semibold text-gray-500 flex items-center gap-2">
+              <FaExclamationCircle className="text-red-500" /> No donation requests found
+            </p> */}
+          </div>
+        )
       )}
     </motion.div>
   );

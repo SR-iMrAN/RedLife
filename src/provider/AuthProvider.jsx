@@ -20,12 +20,12 @@ const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Create axios instance
+
   const axiosSecure = axios.create({
-    baseURL: 'https://blog-nest-server-two.vercel.app', // Change to your deployed URL if needed
+    baseURL: 'http://localhost:3004/', 
   });
 
-  // ✅ Attach token via Axios Interceptor
+  
   useEffect(() => {
     // if (!user) return; 
     const requestInterceptor = axiosSecure.interceptors.request.use(

@@ -6,13 +6,18 @@ import {
   FaHandHoldingHeart,
   FaDonate,
   FaHome,
+  FaPlusCircle,
+  FaUserEdit,
+  FaRegListAlt,
 } from "react-icons/fa";
 import { motion } from "framer-motion";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
+import useAuth from "../hooks/useAuth";
 
 const DashboardLayout = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // toggle this based on screen size or button
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const { role } = useAuth();
 
   return (
     <div className="flex flex-col min-h-screen relative">
@@ -42,30 +47,67 @@ const DashboardLayout = () => {
               Dashboard Home
             </NavLink>
 
-            <NavLink
-              to="/dashboard/users"
-              className={({ isActive }) =>
-                isActive
-                  ? "block bg-red-600 px-4 py-2 rounded font-medium"
-                  : "block hover:bg-gray-700 px-4 py-2 rounded"
-              }
-            >
-              <FaUsers className="inline mr-2" />
-              Manage Users
-            </NavLink>
+            {/* Admin Only */}
+            {role === "admin" && (
+              <>
+                <NavLink
+                  to="/dashboard/users"
+                  className={({ isActive }) =>
+                    isActive
+                      ? "block bg-red-600 px-4 py-2 rounded font-medium"
+                      : "block hover:bg-gray-700 px-4 py-2 rounded"
+                  }
+                >
+                  <FaUsers className="inline mr-2" />
+                  Manage Users
+                </NavLink>
+              </>
+            )}
 
-            <NavLink
-              to="/dashboard/donation-requests"
-              className={({ isActive }) =>
-                isActive
-                  ? "block bg-red-600 px-4 py-2 rounded font-medium"
-                  : "block hover:bg-gray-700 px-4 py-2 rounded"
-              }
-            >
-              <FaHandHoldingHeart className="inline mr-2" />
-              Donation Requests
-            </NavLink>
+            {/* Donor Only */}
+            {role === "donor" && (
+              <>
+                <NavLink
+                  to="/dashboard/create-donation-request"
+                  className={({ isActive }) =>
+                    isActive
+                      ? "block bg-red-600 px-4 py-2 rounded font-medium"
+                      : "block hover:bg-gray-700 px-4 py-2 rounded"
+                  }
+                >
+                  <FaPlusCircle className="inline mr-2" />
+                  Create Donation Request
+                </NavLink>
+                <NavLink
+                  to="/dashboard/my-donation-requests"
+                  className={({ isActive }) =>
+                    isActive
+                      ? "block bg-red-600 px-4 py-2 rounded font-medium"
+                      : "block hover:bg-gray-700 px-4 py-2 rounded"
+                  }
+                >
+                  <FaRegListAlt className="inline mr-2" />
+                  My Donation Requests
+                </NavLink>
+              </>
+            )}
 
+            {/* Volunteer Only */}
+            {role === "volunteer" && (
+              <NavLink
+                to="/dashboard/donation-requests"
+                className={({ isActive }) =>
+                  isActive
+                    ? "block bg-red-600 px-4 py-2 rounded font-medium"
+                    : "block hover:bg-gray-700 px-4 py-2 rounded"
+                }
+              >
+                <FaHandHoldingHeart className="inline mr-2" />
+                Donation Requests
+              </NavLink>
+            )}
+
+            {/* Shared: Blogs, Fundings */}
             <NavLink
               to="/dashboard/blogs"
               className={({ isActive }) =>
@@ -88,6 +130,19 @@ const DashboardLayout = () => {
             >
               <FaDonate className="inline mr-2" />
               Manage Fundings
+            </NavLink>
+
+            {/* Profile - All Roles */}
+            <NavLink
+              to="/dashboard/profile"
+              className={({ isActive }) =>
+                isActive
+                  ? "block bg-red-600 px-4 py-2 rounded font-medium"
+                  : "block hover:bg-gray-700 px-4 py-2 rounded"
+              }
+            >
+              <FaUserEdit className="inline mr-2" />
+              My Profile
             </NavLink>
 
             <Link

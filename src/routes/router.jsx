@@ -16,6 +16,7 @@ import ManageUsers from "../pages/Dashboard/ManageUsers";
 import DonationRequests from "../pages/Dashboard/DonationRequests";
 import ManageBlogs from "../pages/Dashboard/ManageBlogs";
 import ManageFundings from "../pages/Dashboard/ManageFundings";
+import ProfilePage from "../pages/Dashboard/ProfilePage";
 
 const router = createBrowserRouter([
   {
@@ -65,6 +66,11 @@ const router = createBrowserRouter([
         path: "users",
         element: <ManageUsers />,
       },
+      {
+  path: "/dashboard/profile",
+  element: <ProfilePage></ProfilePage>,
+},
+
       {
         path: "donation-requests",
         element: <DonationRequests />,
