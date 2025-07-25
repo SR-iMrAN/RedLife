@@ -1,31 +1,23 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { AuthContext } from '../provider/AuthProvider';
 import { motion } from 'framer-motion';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
-// Sample data for districts & upazilas (replace with your full resource data)
-const districts = [
-  { id: 1, name: 'Dhaka' },
-  { id: 2, name: 'Chittagong' },
-  { id: 3, name: 'Rajshahi' },
-];
-
-const upazilasData = {
-  Dhaka: ['Dhanmondi', 'Gulshan', 'Mirpur'],
-  Chittagong: ['Pahartali', 'Halishahar', 'Patiya'],
-  Rajshahi: ['Bagha', 'Paba', 'Godagari'],
-};
-
 const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
 const Register = () => {
+  const [districts, setDistricts] = useState([]);
+  const [upazilasData, setUpazilasData] = useState([]);
+  const [availableUpazilas, setAvailableUpazilas] = useState([]);
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     photoURL: '',
+    photoFile: null,
     bloodGroup: '',
     district: '',
     upazila: '',
@@ -36,168 +28,131 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [availableUpazilas, setAvailableUpazilas] = useState([]);
 
   const { createUser, setUser, updateUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || '/';
 
-  // Update Upazila options when district changes
   useEffect(() => {
-    if (formData.district) {
-      setAvailableUpazilas(upazilasData[formData.district] || []);
+    const loadLocationData = async () => {
+      try {
+        const districtsData = await fetch('/assets/districts.json').then(res => res.json());
+        const upazilas = await fetch('/public/assets/upazilas.json').then(res => res.json());
+        setDistricts(districtsData);
+        setUpazilasData(upazilas);
+      } catch (error) {
+        console.error('Error loading location data:', error);
+        Swal.fire({ icon: 'error', title: 'Failed to load location data' });
+      }
+    };
+    loadLocationData();
+  }, []);
+
+useEffect(() => {
+  if (formData.district) {
+    const selectedDistrict = districts.find(d => d.name === formData.district);
+    if (selectedDistrict) {
+      const filteredUpazilas = upazilasData.filter(
+        upz => parseInt(upz.district_id) === parseInt(selectedDistrict.id)
+      );
+      setAvailableUpazilas(filteredUpazilas.map(u => u.name));
       setFormData(prev => ({ ...prev, upazila: '' }));
     } else {
       setAvailableUpazilas([]);
       setFormData(prev => ({ ...prev, upazila: '' }));
     }
-  }, [formData.district]);
+  } else {
+    setAvailableUpazilas([]);
+    setFormData(prev => ({ ...prev, upazila: '' }));
+  }
+}, [formData.district, upazilasData, districts]);
+
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value, files } = e.target;
+    if (name === 'photoFile') {
+      setFormData(prev => ({ ...prev, photoFile: files[0] }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
-  // Password validation: uppercase, lowercase, min length 6
   const validatePassword = (password) => {
-    const hasUpper = /[A-Z]/.test(password);
-    const hasLower = /[a-z]/.test(password);
-    const isLongEnough = password.length >= 6;
-    return hasUpper && hasLower && isLongEnough;
+    return /[A-Z]/.test(password) && /[a-z]/.test(password) && password.length >= 6;
   };
 
-  // Upload avatar image to imageBB and set photoURL
-  const handleImageUpload = async (e) => {
-    const imageFile = e.target.files[0];
-    if (!imageFile) return;
+  const uploadImageToImgbb = async () => {
+    if (!formData.photoFile) return formData.photoURL;
     setUploading(true);
 
-    const formData = new FormData();
-    formData.append('image', imageFile);
+    const imageData = new FormData();
+    imageData.append('image', formData.photoFile);
 
-    const API_KEY = 'YOUR_IMAGEBB_API_KEY'; // Replace with your imageBB API key
+    const imgbbKey = import.meta.env.VITE_IMGBB_KEY;
 
     try {
-      const response = await fetch(`https://api.imgbb.com/1/upload?key=${API_KEY}`, {
+      const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, {
         method: 'POST',
-        body: formData,
+        body: imageData,
       });
       const data = await response.json();
-      if (data.success) {
-        setFormData(prev => ({ ...prev, photoURL: data.data.display_url }));
-        Swal.fire({
-          icon: 'success',
-          title: 'Avatar Uploaded!',
-          timer: 1500,
-          showConfirmButton: false,
-        });
-      } else {
-        throw new Error('Upload failed');
-      }
-    } catch (error) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Image Upload Failed',
-        text: 'Please try again.',
-      });
+      if (data.success) return data.data.display_url;
+      throw new Error('Image upload failed');
+    } catch (err) {
+      Swal.fire({ icon: 'error', title: 'Failed to upload avatar', text: err.message });
+      return null;
     } finally {
       setUploading(false);
     }
   };
 
-  // Save user info to your backend (replace your actual API endpoint)
   const saveUserToDB = (userData) => {
-    fetch('YOUR_BACKEND_API/register', {
+    fetch('/api/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userData),
     })
       .then(res => res.json())
-      .then(data => {
-        console.log('User saved:', data);
-      })
-      .catch(err => console.error('Save user error:', err));
+      .then(data => console.log('User saved:', data))
+      .catch(err => console.error('DB Save Error:', err));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
     const {
-      name,
-      email,
-      photoURL,
-      bloodGroup,
-      district,
-      upazila,
-      password,
-      confirm_password,
+      name, email, bloodGroup, district, upazila, password, confirm_password,
     } = formData;
 
-    // Basic validations
-    if (!name || !email || !photoURL || !bloodGroup || !district || !upazila) {
-      Swal.fire({ icon: 'error', title: 'Please fill all fields including avatar.' });
-      return;
+    if (!name || !email || !bloodGroup || !district || !upazila) {
+      return Swal.fire({ icon: 'error', title: 'Please fill all fields' });
     }
+
     if (!validatePassword(password)) {
-      Swal.fire({
+      return Swal.fire({
         icon: 'error',
         title: 'Invalid Password',
         text: 'Password must include uppercase, lowercase, and be at least 6 characters.',
       });
-      return;
     }
+
     if (password !== confirm_password) {
-      Swal.fire({ icon: 'error', title: 'Passwords do not match' });
-      return;
+      return Swal.fire({ icon: 'error', title: 'Passwords do not match' });
     }
+
+    const uploadedAvatar = await uploadImageToImgbb();
+    if (!uploadedAvatar) return;
 
     createUser(email, password)
-      .then((result) => {
+      .then(result => {
         const user = result.user;
-
-        updateUser({ displayName: name, photoURL })
+        updateUser({ displayName: name, photoURL: uploadedAvatar })
           .then(() => {
-            setUser({ ...user, displayName: name, photoURL });
-
-            // Save to backend
+            setUser({ ...user, displayName: name, photoURL: uploadedAvatar });
             saveUserToDB({
               name,
               email,
-              photoURL,
-              bloodGroup,
-              district,
-              upazila,
-              role: 'donor',       // default role
-              status: 'active',    // default status
-              createdAt: new Date(),
-            });
-
-            Swal.fire({
-              icon: 'success',
-              title: 'Registration Successful',
-              text: `Welcome, ${name}!`,
-              confirmButtonText: 'Go to Home',
-            }).then(() => navigate(from, { replace: true }));
-
-            // Reset form
-            setFormData({
-              name: '',
-              email: '',
-              photoURL: '',
-              bloodGroup: '',
-              district: '',
-              upazila: '',
-              password: '',
-              confirm_password: '',
-            });
-          })
-          .catch(() => {
-            // Fallback if updateUser fails
-            setUser(user);
-            saveUserToDB({
-              name,
-              email,
-              photoURL,
+              photoURL: uploadedAvatar,
               bloodGroup,
               district,
               upazila,
@@ -208,198 +163,80 @@ const Register = () => {
             Swal.fire({
               icon: 'success',
               title: 'Registration Successful',
-              text: `Welcome, ${name}!`,
-              confirmButtonText: 'Go to Home',
+              confirmButtonText: 'Go Home',
             }).then(() => navigate(from, { replace: true }));
           });
       })
-      .catch((error) => {
-        Swal.fire({
-          icon: 'error',
-          title: 'Registration Failed',
-          text: error.message,
-        });
+      .catch(err => {
+        Swal.fire({ icon: 'error', title: 'Registration Failed', text: err.message });
       });
   };
 
   return (
-    <motion.div
-      className="min-h-screen text-base-content flex items-center justify-center px-4 bg-red-50"
-      initial={{ opacity: 0, y: 40 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8 }}
-    >
-      <div className="bg-white rounded-xl shadow-2xl flex flex-col md:flex-row w-full max-w-5xl overflow-hidden">
-        {/* Form Side */}
+    <motion.div className="min-h-screen flex justify-center items-center px-4 bg-red-50">
+      <div className="bg-white rounded-xl shadow-2xl flex flex-col md:flex-row w-full max-w-5xl">
         <div className="w-full md:w-1/2 p-8">
           <h2 className="text-3xl font-bold text-gray-800 mb-6">Create Account</h2>
-
-          <form onSubmit={handleSubmit} className="space-y-4 font-semibold text-gray-700">
-            {/* Name */}
+          <form onSubmit={handleSubmit} className="space-y-4 text-gray-700 font-semibold">
             <div>
-              <label className="label-text block mb-1">Full Name</label>
-              <input
-                type="text"
-                name="name"
-                className="input input-bordered w-full"
-                value={formData.name}
-                onChange={handleChange}
-                required
-              />
+              <label className="block mb-1">Full Name</label>
+              <input type="text" name="name" value={formData.name} onChange={handleChange} className="input input-bordered w-full" required />
             </div>
-
-            {/* Email */}
             <div>
-              <label className="label-text block mb-1">Email Address</label>
-              <input
-                type="email"
-                name="email"
-                className="input input-bordered w-full"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
+              <label className="block mb-1">Email Address</label>
+              <input type="email" name="email" value={formData.email} onChange={handleChange} className="input input-bordered w-full" required />
             </div>
-
-            {/* Avatar upload */}
             <div>
-              <label className="label-text block mb-1">Upload Avatar</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="file-input file-input-bordered w-full"
-                disabled={uploading}
-                required={!formData.photoURL}
-              />
-              {uploading && (
-                <p className="text-sm text-gray-500 mt-1">Uploading avatar...</p>
-              )}
-              {formData.photoURL && (
-                <img
-                  src={formData.photoURL}
-                  alt="Avatar Preview"
-                  className="mt-2 h-20 w-20 rounded-full object-cover border"
-                />
-              )}
+              <label className="block mb-1">Avatar URL or Upload</label>
+              <input type="text" name="photoURL" value={formData.photoURL} onChange={handleChange} placeholder="Paste image URL or upload file below" className="input input-bordered w-full mb-2" />
+              <input type="file" name="photoFile" accept="image/*" onChange={handleChange} className="file-input file-input-bordered w-full" />
             </div>
-
-            {/* Blood Group */}
             <div>
-              <label className="label-text block mb-1">Blood Group</label>
-              <select
-                name="bloodGroup"
-                value={formData.bloodGroup}
-                onChange={handleChange}
-                className="select select-bordered w-full"
-                required
-              >
-                <option value="" disabled>
-                  Select Blood Group
-                </option>
-                {bloodGroups.map((bg) => (
-                  <option key={bg} value={bg}>
-                    {bg}
-                  </option>
+              <label className="block mb-1">Blood Group</label>
+              <select name="bloodGroup" value={formData.bloodGroup} onChange={handleChange} className="select select-bordered w-full" required>
+                <option value="" disabled>Select Blood Group</option>
+                {bloodGroups.map((bg, index) => <option key={bg + index} value={bg}>{bg}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block mb-1">District</label>
+              <select name="district" value={formData.district} onChange={handleChange} className="select select-bordered w-full" required>
+                <option value="" disabled>Select District</option>
+                {districts.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block mb-1">Upazila</label>
+              <select name="upazila" value={formData.upazila} onChange={handleChange} className="select select-bordered w-full" required disabled={!formData.district}>
+                <option value="" disabled>{formData.district ? 'Select Upazila' : 'Select District First'}</option>
+                {availableUpazilas.map((upz, index) => (
+                  <option key={`${upz}-${index}`} value={upz}>{upz}</option>
                 ))}
               </select>
             </div>
-
-            {/* District */}
             <div>
-              <label className="label-text block mb-1">District</label>
-              <select
-                name="district"
-                value={formData.district}
-                onChange={handleChange}
-                className="select select-bordered w-full"
-                required
-              >
-                <option value="" disabled>
-                  Select District
-                </option>
-                {districts.map(({ id, name }) => (
-                  <option key={id} value={name}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Upazila */}
-            <div>
-              <label className="label-text block mb-1">Upazila</label>
-              <select
-                name="upazila"
-                value={formData.upazila}
-                onChange={handleChange}
-                className="select select-bordered w-full"
-                required
-                disabled={!formData.district}
-              >
-                <option value="" disabled>
-                  {formData.district ? 'Select Upazila' : 'Select District First'}
-                </option>
-                {availableUpazilas.map((upazila) => (
-                  <option key={upazila} value={upazila}>
-                    {upazila}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Password */}
-            <div>
-              <label className="label-text block mb-1">Password</label>
+              <label className="block mb-1">Password</label>
               <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  className="input input-bordered w-full pr-12"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
-                <span
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-2/4 -translate-y-1/2 cursor-pointer text-xl text-gray-600"
-                >
+                <input type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleChange} className="input input-bordered w-full pr-12" required />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-xl text-gray-600" onClick={() => setShowPassword(!showPassword)}>
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
                 </span>
               </div>
-              <p className="text-sm text-gray-500 mt-1">
-                Must include uppercase, lowercase, and be at least 6 characters.
-              </p>
             </div>
-
-            {/* Confirm Password */}
             <div>
-              <label className="label-text block mb-1">Confirm Password</label>
+              <label className="block mb-1">Confirm Password</label>
               <div className="relative">
-                <input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  name="confirm_password"
-                  className="input input-bordered w-full pr-12"
-                  value={formData.confirm_password}
-                  onChange={handleChange}
-                  required
-                />
-                <span
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-2/4 -translate-y-1/2 cursor-pointer text-xl text-gray-600"
-                >
+                <input type={showConfirmPassword ? 'text' : 'password'} name="confirm_password" value={formData.confirm_password} onChange={handleChange} className="input input-bordered w-full pr-12" required />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-xl text-gray-600" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                   {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                 </span>
               </div>
             </div>
-
-            <button type="submit" className="btn btn-primary w-full mt-4">
-              Register
+            <button type="submit" className="btn btn-primary w-full mt-4" disabled={uploading}>
+              {uploading ? 'Registering...' : 'Register'}
             </button>
           </form>
         </div>
-
-        {/* Lottie Animation Side */}
         <div className="hidden md:flex md:w-1/2 items-center justify-center bg-red-50 p-8">
           <DotLottieReact
             src="https://lottie.host/adad3df7-7f9a-43ff-a6f0-8066a6f717a1/XKy8iJDhU0.lottie"
