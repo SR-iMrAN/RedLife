@@ -56,16 +56,11 @@ const SearchDonor = () => {
     }
 
     try {
-      const res = await fetch('http://localhost:3004/users');
-      const data = await res.json();
-      const matchedDonors = data.filter(d =>
-        d.bloodGroup === filters.bloodGroup &&
-        d.district === filters.district &&
-        d.upazila === filters.upazila &&
-        d.role === 'donor'
-      );
-      setDonors(matchedDonors);
-      setSearched(true);
+         const query = new URLSearchParams(filters).toString();
+    const res = await fetch(`http://localhost:3004/donors?${query}`);
+    const data = await res.json();
+    setDonors(data);
+    setSearched(true);
     } catch (err) {
       Swal.fire({ icon: 'error', title: 'Failed to fetch donors' });
     }
@@ -116,8 +111,11 @@ const SearchDonor = () => {
               loop
               autoplay
               style={{ width: '100%', maxWidth: 400 }}
+
             />
+             <p className="text-lg font-semibold mt-4 text-gray-600">Sorry, No donor found</p>
           </motion.div>
+          
         </div>
 
         {/* Result Section */}
