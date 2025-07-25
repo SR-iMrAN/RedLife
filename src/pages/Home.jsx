@@ -40,7 +40,7 @@ const Home = () => {
           </h1>
           <div className="flex gap-4">
             <a
-              href="/register"
+              href="/auth/register"
               className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full flex items-center gap-2 transition"
             >
               <FaUserPlus /> Join as a Donor

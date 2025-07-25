@@ -11,6 +11,7 @@ import AddBlog from "../pages/AddBlog";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import PrivateRoute from "../provider/PrivateRoute"; 
+import SearchDonors from "../pages/SearchDonors";
 
 const router = createBrowserRouter([
   {
@@ -50,6 +51,18 @@ const router = createBrowserRouter([
         path: "/auth/register",
         element: <Register />,
       },
+ {
+        path: "/search",
+        element:<SearchDonors></SearchDonors>,
+      },
+
+
+
+
+
+
+
+
     ],
   },
 ]);
