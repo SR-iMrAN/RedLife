@@ -41,12 +41,12 @@ const CreateDonationRequest = () => {
       toast.error("You are blocked and cannot create a donation request.");
       return;
     }
-
+ const selectedDistrict = districts.find((d) => d.id === data.recipientDistrict);
     const donationRequest = {
       requesterName: user?.displayName,
       requesterEmail: user?.email,
       recipientName: data.recipientName,
-      recipientDistrict: data.recipientDistrict,
+      recipientDistrict: selectedDistrict?.name || "",
       recipientUpazila: data.recipientUpazila,
       hospitalName: data.hospitalName,
       fullAddress: data.fullAddress,

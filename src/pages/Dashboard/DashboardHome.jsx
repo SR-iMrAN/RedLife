@@ -1,25 +1,44 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { FaHome, FaUsers, FaHandHoldingUsd, FaTint, FaEye, FaEdit, FaTrash, FaCheck, FaTimes } from "react-icons/fa";
+import {
+  FaHome,
+  FaUsers,
+  FaHandHoldingUsd,
+  FaTint,
+  FaEye,
+  FaEdit,
+  FaTrash,
+  FaCheck,
+  FaTimes,
+} from "react-icons/fa";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import useAuth from "../../hooks/useAuth";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import Swal from "sweetalert2";
 
 const DashboardHome = () => {
   const { user, role } = useAuth();
   const axiosSecure = useAxiosSecure();
 
-  // ------------------ ADMIN DASHBOARD DATA ------------------
+  // Admin/Volunteer Stats
   const { data: totalDonors = 0 } = useQuery({
     queryKey: ["totalDonors"],
     queryFn: async () => {
       const res = await axiosSecure.get("/admin/total-donors");
       return res.data?.count || 0;
     },
-    enabled: role === "admin",
+    enabled: role === "admin" || role === "volunteer",
+  });
+
+  const { data: donationRequests = [], refetch: refetchDonationRequests } = useQuery({
+    queryKey: ["my-donation-requests", user?.email],
+    queryFn: async () => {
+      const res = await axiosSecure.get(`/donation-requests?email=${user.email}`);
+      return res.data;
+    },
   });
 
   const { data: totalRequests = 0 } = useQuery({
@@ -28,7 +47,7 @@ const DashboardHome = () => {
       const res = await axiosSecure.get("/admin/total-donation-requests");
       return res.data?.count || 0;
     },
-    enabled: role === "admin",
+    enabled: role === "admin" || role === "volunteer",
   });
 
   const { data: totalFunds = 0 } = useQuery({
@@ -37,36 +56,49 @@ const DashboardHome = () => {
       const res = await axiosSecure.get("/admin/total-funds");
       return res.data?.amount || 0;
     },
-    enabled: role === "admin",
+    enabled: role === "admin" || role === "volunteer",
   });
 
-  // ------------------ USER (Donor) DATA ------------------
-  const { data: requests = [], refetch, isLoading } = useQuery({
+  // Donor Recent Requests
+  const {
+    data: requests = [],
+    refetch: refetchDonorRequests,
+    isLoading,
+  } = useQuery({
     queryKey: ["donorRecentRequests", user?.email],
     queryFn: async () => {
-      const res = await axiosSecure.get(`/donations/my-recent`);
+      const res = await axiosSecure.get(`/donations/my-recent?email=${user?.email}`);
       return res.data;
     },
-    enabled: role !== "admin" && !!user?.email,
+    enabled: role === "donor" && !!user?.email,
   });
 
   const handleStatusChange = async (id, status) => {
     try {
       await axiosSecure.patch(`/donations/${id}/status`, { status });
       toast.success(`Marked as ${status}`);
-      refetch();
+      refetchDonorRequests();
     } catch {
       toast.error("Failed to update status");
     }
   };
 
   const handleDelete = async (id) => {
-    const confirm = window.confirm("Are you sure you want to delete this request?");
-    if (!confirm) return;
+    const { isConfirmed } = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (!isConfirmed) return;
+
     try {
-      await axiosSecure.delete(`/donations/${id}`);
+      await axiosSecure.delete(`/donation-requests/${id}`);
       toast.success("Deleted successfully");
-      refetch();
+      refetchDonationRequests(); // Use correct refetch for deletion
+      refetchDonorRequests();    // Optional: Also refresh donor view
     } catch {
       toast.error("Failed to delete");
     }
@@ -74,7 +106,7 @@ const DashboardHome = () => {
 
   return (
     <motion.div
-      className="space-y-6"
+      className="space-y-6 p-4 md:p-8"
       initial={{ opacity: 0, x: -50 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5 }}
@@ -83,9 +115,17 @@ const DashboardHome = () => {
         <FaHome /> Welcome, {user?.displayName}
       </h2>
 
-      {/* ---------------- Admin Cards ---------------- */}
-      {role === "admin" && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="flex justify-center">
+        <DotLottieReact
+          src="https://lottie.host/05c3cfc3-1126-4ba3-8912-727c1bc0ed12/S9zhRx3laF.lottie"
+          loop
+          autoplay
+          style={{ width: 200, height: 200 }}
+        />
+      </div>
+
+      {(role === "admin" || role === "volunteer") && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
           <div className="bg-white rounded-2xl shadow p-6 flex items-center gap-4 border-l-8 border-red-500">
             <FaUsers className="text-4xl text-red-500" />
             <div>
@@ -112,14 +152,20 @@ const DashboardHome = () => {
         </div>
       )}
 
-      {/* ---------------- Donor/Volunteer Recent Requests ---------------- */}
-      {role !== "admin" && (
+      {role === "donor" && (
         <>
-          {requests.length > 0 ? (
+          {isLoading && <p>Loading your recent requests...</p>}
+
+          {!isLoading && requests.length === 0 && (
+            <div className="text-center text-gray-500 mt-8">No recent donation requests found.</div>
+          )}
+
+          {!isLoading && requests.length > 0 && (
             <>
-              <h3 className="text-xl font-semibold">Your Recent Donation Requests</h3>
+              <h3 className="text-xl font-semibold mt-6">Your Recent Donation Requests</h3>
+
               <div className="overflow-x-auto">
-                <table className="min-w-full bg-white shadow rounded">
+                <table className="min-w-full bg-white shadow rounded mt-4">
                   <thead>
                     <tr className="bg-gray-100 text-left text-sm uppercase text-gray-600">
                       <th className="p-3">Recipient</th>
@@ -133,14 +179,30 @@ const DashboardHome = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {requests.map((r) => (
-                      <tr key={r._id} className="border-b text-sm">
+                    {requests.slice(0, 3).map((r) => (
+                      <tr key={r._id} className="border-b text-sm hover:bg-red-50">
                         <td className="p-3">{r.recipientName}</td>
-                        <td className="p-3">{r.recipientDistrict}, {r.recipientUpazila}</td>
+                        <td className="p-3">
+                          {r.recipientDistrict}, {r.recipientUpazila}
+                        </td>
                         <td className="p-3">{r.donationDate}</td>
                         <td className="p-3">{r.donationTime}</td>
-                        <td className="p-3">{r.bloodGroup}</td>
-                        <td className="p-3 capitalize">{r.status}</td>
+                        <td className="p-3 font-bold text-red-600">{r.bloodGroup}</td>
+                        <td className="p-3 capitalize">
+                          <span
+                            className={`px-2 py-1 rounded text-white text-xs ${
+                              r.status === "pending"
+                                ? "bg-yellow-500"
+                                : r.status === "inprogress"
+                                ? "bg-blue-500"
+                                : r.status === "done"
+                                ? "bg-green-600"
+                                : "bg-red-600"
+                            }`}
+                          >
+                            {r.status}
+                          </span>
+                        </td>
                         <td className="p-3">
                           {r.status === "inprogress" && r.donor?.name && (
                             <>
@@ -155,24 +217,38 @@ const DashboardHome = () => {
                               <button
                                 onClick={() => handleStatusChange(r._id, "done")}
                                 className="text-green-600"
+                                title="Mark as Done"
                               >
                                 <FaCheck />
                               </button>
                               <button
                                 onClick={() => handleStatusChange(r._id, "canceled")}
                                 className="text-red-600"
+                                title="Mark as Canceled"
                               >
                                 <FaTimes />
                               </button>
                             </>
                           )}
-                          <Link to={`/dashboard/edit-request/${r._id}`} className="text-yellow-600">
+                          <Link
+                            to={`/dashboard/edit-request/${r._id}`}
+                            className="text-yellow-600"
+                            title="Edit Request"
+                          >
                             <FaEdit />
                           </Link>
-                          <button onClick={() => handleDelete(r._id)} className="text-red-600">
+                          <button
+                            onClick={() => handleDelete(r._id)}
+                            className="text-red-600"
+                            title="Delete Request"
+                          >
                             <FaTrash />
                           </button>
-                          <Link to={`/dashboard/request/${r._id}`} className="text-blue-600">
+                          <Link
+                            to={`/dashboard/request/${r._id}`}
+                            className="text-blue-600"
+                            title="View Request Details"
+                          >
                             <FaEye />
                           </Link>
                         </td>
@@ -180,24 +256,15 @@ const DashboardHome = () => {
                     ))}
                   </tbody>
                 </table>
+
+                <Link
+                  to="/dashboard/my-requests"
+                  className="mt-4 inline-block bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                >
+                  View My All Requests
+                </Link>
               </div>
-              <Link
-                to="/dashboard/my-requests"
-                className="mt-4 inline-block bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-              >
-                View My All Requests
-              </Link>
             </>
-          ) : (
-            !isLoading && (
-              <div className="flex flex-col items-center justify-center gap-4 mt-10">
-                <DotLottieReact
-                  src="https://lottie.host/05c3cfc3-1126-4ba3-8912-727c1bc0ed12/S9zhRx3laF.lottie"
-                  loop
-                  autoplay
-                />
-              </div>
-            )
           )}
         </>
       )}
