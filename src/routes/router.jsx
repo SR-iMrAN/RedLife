@@ -1,22 +1,23 @@
 import { createBrowserRouter } from "react-router-dom";
 
+import MainLayout from "../layouts/MainLayout";
+import DashboardLayout from "../layouts/DashboardLayout";
+
 import Home from "../pages/Home";
 import ErrorPage from "../pages/Errorpage";
-import MainLayout from "../layouts/MainLayout";
-import AddBlog from "../pages/AddBlog";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
-import PrivateRoute from "../provider/PrivateRoute";
 import SearchDonors from "../pages/SearchDonors";
 
-
-import DashboardLayout from "../layouts/DashboardLayout";
 import DashboardHome from "../pages/Dashboard/DashboardHome";
 import ManageUsers from "../pages/Dashboard/ManageUsers";
 import DonationRequests from "../pages/Dashboard/DonationRequests";
 import ManageBlogs from "../pages/Dashboard/ManageBlogs";
 import ManageFundings from "../pages/Dashboard/ManageFundings";
 import ProfilePage from "../pages/Dashboard/ProfilePage";
+import AddBlog from "../pages/Dashboard/AddBlog";
+
+import PrivateRoute from "../provider/PrivateRoute";
 
 const router = createBrowserRouter([
   {
@@ -29,23 +30,15 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: "/add-blog",
-        element: (
-          <PrivateRoute>
-            <AddBlog />
-          </PrivateRoute>
-        ),
-      },
-      {
-        path: "/auth/login",
+        path: "auth/login",
         element: <Login />,
       },
       {
-        path: "/auth/register",
+        path: "auth/register",
         element: <Register />,
       },
       {
-        path: "/search",
+        path: "search",
         element: <SearchDonors />,
       },
     ],
@@ -57,6 +50,7 @@ const router = createBrowserRouter([
         <DashboardLayout />
       </PrivateRoute>
     ),
+    errorElement: <ErrorPage />,
     children: [
       {
         index: true,
@@ -67,17 +61,20 @@ const router = createBrowserRouter([
         element: <ManageUsers />,
       },
       {
-  path: "/dashboard/profile",
-  element: <ProfilePage></ProfilePage>,
-},
-
-      {
-        path: "donation-requests",
-        element: <DonationRequests />,
+        path: "profile",
+        element: <ProfilePage />,
       },
       {
         path: "blogs",
         element: <ManageBlogs />,
+      },
+      {
+        path: "add-blog",
+        element: <AddBlog />,
+      },
+      {
+        path: "donation-requests",
+        element: <DonationRequests />,
       },
       {
         path: "fundings",

@@ -5,8 +5,10 @@ import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { FiFileText, FiImage, FiList, FiEdit3 } from "react-icons/fi";
 import { BiCategory } from "react-icons/bi";
 import { getAuth } from "firebase/auth";
-import app from "../firebase/firebase.config"; // Make sure path is correct
+import app from "../../firebase/firebase.config";
 import axios from "axios";
+
+const imgbbKey = import.meta.env.VITE_IMGBB_KEY;
 
 const AddBlog = () => {
   const auth = getAuth(app);
@@ -27,11 +29,32 @@ const AddBlog = () => {
         return;
       }
 
-      // Get Firebase ID token
+      const imageFile = data.image[0];
+      const formData = new FormData();
+      formData.append("image", imageFile);
+
+      // Upload to ImgBB
+      const imgRes = await axios.post(
+        `https://api.imgbb.com/1/upload?key=${imgbbKey}`,
+        formData
+      );
+
+      const imageUrl = imgRes.data.data.url;
+
+      const blogData = {
+        title: data.title,
+        image: imageUrl,
+        category: data.category,
+        shortDesc: data.shortDesc,
+        longDesc: data.longDesc,
+        status: "draft", // Default status
+        createdAt: new Date().toISOString(),
+        authorEmail: user.email,
+      };
+
       const token = await user.getIdToken();
 
-      // Send POST request to backend
-      const response = await axios.post("https://blog-nest-server-two.vercel.app/blogs", data, {
+      const response = await axios.post("https://blog-nest-server-two.vercel.app/blogs", blogData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -78,15 +101,16 @@ const AddBlog = () => {
             {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
           </div>
 
-          {/* Image */}
+          {/* Image File Upload */}
           <div>
             <label className="block mb-1 font-medium flex items-center gap-2">
-              <FiImage /> Image URL
+              <FiImage /> Upload Thumbnail
             </label>
             <input
-              {...register("image", { required: "Image URL is required" })}
+              type="file"
+              accept="image/*"
+              {...register("image", { required: "Image is required" })}
               className="w-full border px-4 py-2 rounded"
-              placeholder="https://example.com/image.jpg"
             />
             {errors.image && <p className="text-red-500 text-sm">{errors.image.message}</p>}
           </div>
