@@ -11,7 +11,8 @@ import SearchDonors from "../pages/SearchDonors";
 
 import DashboardHome from "../pages/Dashboard/DashboardHome";
 import ManageUsers from "../pages/Dashboard/ManageUsers";
-import DonationRequests from "../pages/Dashboard/DonationRequests";
+import CreateDonationRequest from "../pages/Dashboard/CreateDonationRequest";
+import MyDonationRequests from "../pages/Dashboard/MyDonationRequests";
 import ManageBlogs from "../pages/Dashboard/ManageBlogs";
 import ManageFundings from "../pages/Dashboard/ManageFundings";
 import ProfilePage from "../pages/Dashboard/ProfilePage";
@@ -77,10 +78,14 @@ const router = createBrowserRouter([
   path: "content-management/edit-blog/:id",
   element: <EditBlog></EditBlog>,  
 },
-      {
-        path: "donation-requests",
-        element: <DonationRequests />,
-      },
+     {
+  path: "create-donation-request",
+  element: <CreateDonationRequest />,
+},
+{
+  path: "my-donation-requests",
+  element: <MyDonationRequests />,
+},
       {
         path: "fundings",
         element: <ManageFundings />,
