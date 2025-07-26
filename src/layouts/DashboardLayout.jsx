@@ -118,7 +118,7 @@ const DashboardLayout = () => {
               </>
             )}
 
-            {role === "volunteer" && (
+            {role === "volunteer"|| "admin" && (
               <NavLink
                 to="/dashboard/donation-requests"
                 className={({ isActive }) =>
@@ -133,31 +133,35 @@ const DashboardLayout = () => {
               </NavLink>
             )}
 
-            <NavLink
-              to="/dashboard/content-management"
-              className={({ isActive }) =>
-                isActive
-                  ? "block bg-red-600 px-4 py-2 rounded font-medium"
-                  : "block hover:bg-gray-700 px-4 py-2 rounded"
-              }
-              onClick={() => setIsSidebarOpen(false)}
-            >
-              <FaBlog className="inline mr-2" />
-              Manage Blogs
-            </NavLink>
+            {role !== "donor" && (
+  <>
+    <NavLink
+      to="/dashboard/content-management"
+      className={({ isActive }) =>
+        isActive
+          ? "block bg-red-600 px-4 py-2 rounded font-medium"
+          : "block hover:bg-gray-700 px-4 py-2 rounded"
+      }
+      onClick={() => setIsSidebarOpen(false)}
+    >
+      <FaBlog className="inline mr-2" />
+      Manage Blogs
+    </NavLink>
 
-            <NavLink
-              to="/dashboard/fundings"
-              className={({ isActive }) =>
-                isActive
-                  ? "block bg-red-600 px-4 py-2 rounded font-medium"
-                  : "block hover:bg-gray-700 px-4 py-2 rounded"
-              }
-              onClick={() => setIsSidebarOpen(false)}
-            >
-              <FaDonate className="inline mr-2" />
-              Manage Fundings
-            </NavLink>
+    <NavLink
+      to="/dashboard/fundings"
+      className={({ isActive }) =>
+        isActive
+          ? "block bg-red-600 px-4 py-2 rounded font-medium"
+          : "block hover:bg-gray-700 px-4 py-2 rounded"
+      }
+      onClick={() => setIsSidebarOpen(false)}
+    >
+      <FaDonate className="inline mr-2" />
+      Manage Fundings
+    </NavLink>
+  </>
+)}
 
             <NavLink
               to="/dashboard/profile"
