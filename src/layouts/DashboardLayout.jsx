@@ -18,7 +18,7 @@ import useAuth from "../hooks/useAuth";
 const DashboardLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { role } = useAuth();
-
+console.log( "the role is",role);
   return (
     <div className="flex flex-col min-h-screen relative">
       {/* Navbar */}
