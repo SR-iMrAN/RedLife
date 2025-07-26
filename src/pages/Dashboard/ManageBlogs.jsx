@@ -55,7 +55,7 @@ const ManageBlogs = () => {
           Content Management 📝
         </h2>
         <Link
-          to="/dashboard/add-blog"
+          to="/dashboard/content-management/add-blog"
           className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl shadow transition-all"
         >
           <FaPlus /> Add Blog

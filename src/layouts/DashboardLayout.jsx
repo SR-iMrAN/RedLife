@@ -134,7 +134,7 @@ const DashboardLayout = () => {
             )}
 
             <NavLink
-              to="/dashboard/blogs"
+              to="/dashboard/content-management"
               className={({ isActive }) =>
                 isActive
                   ? "block bg-red-600 px-4 py-2 rounded font-medium"

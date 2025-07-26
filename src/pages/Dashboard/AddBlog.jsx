@@ -2,8 +2,8 @@ import React, { useRef, useState } from "react";
 import { getAuth } from "firebase/auth";
 import app from "../../firebase/firebase.config";
 import { useForm } from "react-hook-form";
-import { toast } from "react-hot-toast";
 import axios from "axios";
+import Swal from "sweetalert2";
 import { FiEdit3, FiUpload, FiLink, FiList, FiFileText } from "react-icons/fi";
 import { motion } from "framer-motion";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
@@ -16,6 +16,7 @@ const AddBlog = () => {
   const editor = useRef(null);
   const [richText, setRichText] = useState("");
   const [useUrl, setUseUrl] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const {
     register,
@@ -25,13 +26,19 @@ const AddBlog = () => {
   } = useForm();
 
   const onSubmit = async (data) => {
+    if (!richText.trim()) {
+      Swal.fire("Error!", "Blog content cannot be empty!", "error");
+      return;
+    }
+
     try {
       const user = auth.currentUser;
       if (!user) {
-        toast.error("You must be logged in to add a blog.");
+        Swal.fire("Unauthorized", "You must be logged in to add a blog.", "warning");
         return;
       }
 
+      setLoading(true);
       let imageUrl = "";
 
       if (useUrl) {
@@ -65,15 +72,17 @@ const AddBlog = () => {
       });
 
       if (response.data.insertedId || response.data.acknowledged) {
-        toast.success("✅ Blog successfully added!");
+        Swal.fire("Success!", "Blog successfully added!", "success");
         reset();
         setRichText("");
       } else {
-        toast.error("Something went wrong.");
+        Swal.fire("Oops!", "Something went wrong.", "error");
       }
     } catch (err) {
       console.error(err);
-      toast.error("Submission failed!");
+      Swal.fire("Error!", "Submission failed!", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -159,13 +168,22 @@ const AddBlog = () => {
 
           {/* Submit Button */}
           <div className="text-center">
-            <button type="submit" className="btn btn-outline btn-primary px-6">
-              <FiFileText className="mr-2" /> Submit Blog
+            <button
+              type="submit"
+              className="btn btn-outline btn-primary px-6"
+              disabled={loading}
+            >
+              {loading ? "Submitting..." : (
+                <>
+                  <FiFileText className="mr-2" /> Submit Blog
+                </>
+              )}
             </button>
           </div>
         </form>
       </div>
 
+      {/* Lottie animation */}
       <div className="w-full md:w-1/2 max-w-md">
         <DotLottieReact
           src="https://lottie.host/9986b3b6-91e4-4571-b291-d741593ca61f/XaCpGRjghW.lottie"

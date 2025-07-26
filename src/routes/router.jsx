@@ -65,11 +65,11 @@ const router = createBrowserRouter([
         element: <ProfilePage />,
       },
       {
-        path: "blogs",
+        path: "content-management",
         element: <ManageBlogs />,
       },
       {
-        path: "add-blog",
+        path: "content-management/add-blog",
         element: <AddBlog />,
       },
       {
