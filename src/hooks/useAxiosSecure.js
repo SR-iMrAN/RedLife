@@ -1,11 +1,11 @@
 import axios from "axios";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 import app from "../firebase/firebase.config";
 
 const axiosSecure = axios.create({
-  baseURL: "http://localhost:3004/", 
+  baseURL: "http://localhost:3004/",
 });
 
 const useAxiosSecure = () => {
@@ -13,16 +13,21 @@ const useAxiosSecure = () => {
   const auth = getAuth(app);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const token = await user.getIdToken();
-        axiosSecure.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      } else {
-        delete axiosSecure.defaults.headers.common["Authorization"];
-      }
-    });
+    const interceptor = axiosSecure.interceptors.request.use(
+      async (config) => {
+        const user = auth.currentUser;
+        if (user) {
+          const token = await user.getIdToken();
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
 
-    return () => unsubscribe();
+    return () => {
+      axiosSecure.interceptors.request.eject(interceptor);
+    };
   }, [auth]);
 
   return axiosSecure;
