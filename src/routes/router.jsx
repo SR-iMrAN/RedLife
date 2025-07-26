@@ -18,6 +18,7 @@ import ProfilePage from "../pages/Dashboard/ProfilePage";
 import AddBlog from "../pages/Dashboard/AddBlog";
 
 import PrivateRoute from "../provider/PrivateRoute";
+import EditBlog from "../pages/Dashboard/EditBlog";
 
 const router = createBrowserRouter([
   {
@@ -72,6 +73,10 @@ const router = createBrowserRouter([
         path: "content-management/add-blog",
         element: <AddBlog />,
       },
+      {
+  path: "content-management/edit-blog/:id",
+  element: <EditBlog></EditBlog>,  
+},
       {
         path: "donation-requests",
         element: <DonationRequests />,
