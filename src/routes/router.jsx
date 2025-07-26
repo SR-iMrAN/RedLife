@@ -18,7 +18,7 @@ import ManageFundings from "../pages/Dashboard/ManageFundings";
 import ProfilePage from "../pages/Dashboard/ProfilePage";
 import AddBlog from "../pages/Dashboard/AddBlog";
 import EditDonationRequest from "../pages/Dashboard/EditDonationRequest";
-
+import DonationRequestDetails from "../pages/Dashboard/DonationRequestDetails";
 import PrivateRoute from "../provider/PrivateRoute";
 import EditBlog from "../pages/Dashboard/EditBlog";
 
@@ -90,6 +90,10 @@ const router = createBrowserRouter([
 },{
   path: "edit-donation-request/:id",
   element: <EditDonationRequest />,
+},
+{
+  path: "request/:id",
+  element: <DonationRequestDetails />,
 },
       {
         path: "fundings",

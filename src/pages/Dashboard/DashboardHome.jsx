@@ -174,7 +174,7 @@ const DashboardHome = () => {
                       <th className="p-3">Time</th>
                       <th className="p-3">Blood</th>
                       <th className="p-3">Status</th>
-                      <th className="p-3">Donor Info</th>
+                      {/* <th className="p-3">Donor Info</th> */}
                       <th className="p-3">Actions</th>
                     </tr>
                   </thead>
@@ -203,14 +203,14 @@ const DashboardHome = () => {
                             {r.status}
                           </span>
                         </td>
-                        <td className="p-3">
+                        {/* <td className="p-3">
                           {r.status === "inprogress" && r.donor?.name && (
                             <>
                               <p>{r.donor.name}</p>
                               <p className="text-xs text-gray-500">{r.donor.email}</p>
                             </>
                           )}
-                        </td>
+                        </td> */}
                         <td className="p-3 space-x-2 flex flex-wrap">
                           {r.status === "inprogress" && (
                             <>
@@ -258,7 +258,7 @@ const DashboardHome = () => {
                 </table>
 
                 <Link
-                  to="/dashboard/my-requests"
+                  to="/dashboard/my-donation-requests"
                   className="mt-4 inline-block bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
                 >
                   View My All Requests
