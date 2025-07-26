@@ -112,7 +112,7 @@ const ManageUsers = () => {
             statusFilter === "active" ? "btn-primary" : "btn-outline"
           } flex items-center gap-1`}
         >
-          <FaCheckCircle /> Active
+          <span className="text-green-400"><FaCheckCircle /></span> Active
         </button>
         <button
           onClick={() => {
@@ -123,7 +123,7 @@ const ManageUsers = () => {
             statusFilter === "blocked" ? "btn-primary" : "btn-outline"
           } flex items-center gap-1`}
         >
-          <FaBan /> Blocked
+          <span  className="text-red-400"> <FaBan /> </span> Blocked
         </button>
       </div>
 
@@ -157,8 +157,8 @@ const ManageUsers = () => {
                 </td>
                 <td>{user.name}</td>
                 <td>{user.email}</td>
-                <td className="capitalize">{user.role || "donor"}</td>
-                <td className="capitalize">{user.status || "active"}</td>
+                <td className="capitalize">    {user.role || "donor"}</td>
+                <td className="capitalize">  {user.status || "active"}</td>
                 <td>
                   <div className="dropdown dropdown-left">
                     <label tabIndex={0} className="btn btn-sm m-1">
