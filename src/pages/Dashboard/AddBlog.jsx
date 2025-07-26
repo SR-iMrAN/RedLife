@@ -1,17 +1,21 @@
-import { useForm } from "react-hook-form";
-import { toast } from "react-hot-toast";
-import { motion } from "framer-motion";
-import { DotLottieReact } from "@lottiefiles/dotlottie-react";
-import { FiFileText, FiImage, FiList, FiEdit3 } from "react-icons/fi";
-import { BiCategory } from "react-icons/bi";
+import React, { useRef, useState } from "react";
 import { getAuth } from "firebase/auth";
 import app from "../../firebase/firebase.config";
+import { useForm } from "react-hook-form";
+import { toast } from "react-hot-toast";
 import axios from "axios";
+import { FiEdit3, FiUpload, FiLink, FiList, FiFileText } from "react-icons/fi";
+import { motion } from "framer-motion";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import JoditEditor from "jodit-react";
 
 const imgbbKey = import.meta.env.VITE_IMGBB_KEY;
 
 const AddBlog = () => {
   const auth = getAuth(app);
+  const editor = useRef(null);
+  const [richText, setRichText] = useState("");
+  const [useUrl, setUseUrl] = useState(false);
 
   const {
     register,
@@ -23,38 +27,38 @@ const AddBlog = () => {
   const onSubmit = async (data) => {
     try {
       const user = auth.currentUser;
-
       if (!user) {
         toast.error("You must be logged in to add a blog.");
         return;
       }
 
-      const imageFile = data.image[0];
-      const formData = new FormData();
-      formData.append("image", imageFile);
+      let imageUrl = "";
 
-      // Upload to ImgBB
-      const imgRes = await axios.post(
-        `https://api.imgbb.com/1/upload?key=${imgbbKey}`,
-        formData
-      );
+      if (useUrl) {
+        imageUrl = data.imageUrl;
+      } else {
+        const imageFile = data.image[0];
+        const formData = new FormData();
+        formData.append("image", imageFile);
 
-      const imageUrl = imgRes.data.data.url;
+        const imgRes = await axios.post(
+          `https://api.imgbb.com/1/upload?key=${imgbbKey}`,
+          formData
+        );
+        imageUrl = imgRes.data.data.url;
+      }
 
       const blogData = {
         title: data.title,
         image: imageUrl,
-        category: data.category,
-        shortDesc: data.shortDesc,
-        longDesc: data.longDesc,
-        status: "draft", // Default status
+        longDesc: richText,
+        status: "draft",
         createdAt: new Date().toISOString(),
         authorEmail: user.email,
       };
 
       const token = await user.getIdToken();
-
-      const response = await axios.post("https://blog-nest-server-two.vercel.app/blogs", blogData, {
+      const response = await axios.post("http://localhost:3004/blogs", blogData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -63,12 +67,13 @@ const AddBlog = () => {
       if (response.data.insertedId || response.data.acknowledged) {
         toast.success("✅ Blog successfully added!");
         reset();
+        setRichText("");
       } else {
-        toast.error("Something went wrong. Blog not added.");
+        toast.error("Something went wrong.");
       }
-    } catch (error) {
-      console.error("Blog add error:", error);
-      toast.error("Failed to add blog. See console for details.");
+    } catch (err) {
+      console.error(err);
+      toast.error("Submission failed!");
     }
   };
 
@@ -80,10 +85,7 @@ const AddBlog = () => {
       className="min-h-screen bg-emerald-200 flex flex-col md:flex-row items-center justify-center px-4 py-10 gap-10"
     >
       <div className="w-full md:w-1/2">
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="space-y-6 bg-white p-6 shadow-md rounded-lg"
-        >
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-white p-6 shadow-md rounded-lg">
           <h2 className="text-2xl font-semibold text-center mb-4 flex items-center justify-center gap-2">
             <FiFileText /> Add a New Blog
           </h2>
@@ -101,64 +103,58 @@ const AddBlog = () => {
             {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
           </div>
 
-          {/* Image File Upload */}
+          {/* Toggle Upload or URL */}
+          <div className="flex gap-4 items-center">
+            <label className="cursor-pointer flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={useUrl}
+                onChange={() => setUseUrl(!useUrl)}
+              />
+              Use Image URL
+            </label>
+          </div>
+
+          {/* Image Upload / URL */}
+          {!useUrl ? (
+            <div>
+              <label className="block mb-1 font-medium flex items-center gap-2">
+                <FiUpload /> Upload Thumbnail
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                {...register("image", { required: !useUrl })}
+                className="w-full border px-4 py-2 rounded"
+              />
+              {errors.image && <p className="text-red-500 text-sm">{errors.image.message}</p>}
+            </div>
+          ) : (
+            <div>
+              <label className="block mb-1 font-medium flex items-center gap-2">
+                <FiLink /> Thumbnail URL
+              </label>
+              <input
+                {...register("imageUrl", { required: useUrl })}
+                placeholder="https://example.com/image.jpg"
+                className="w-full border px-4 py-2 rounded"
+              />
+              {errors.imageUrl && <p className="text-red-500 text-sm">{errors.imageUrl.message}</p>}
+            </div>
+          )}
+
+          {/* Rich Text Editor */}
           <div>
             <label className="block mb-1 font-medium flex items-center gap-2">
-              <FiImage /> Upload Thumbnail
+              <FiList /> Blog Content
             </label>
-            <input
-              type="file"
-              accept="image/*"
-              {...register("image", { required: "Image is required" })}
-              className="w-full border px-4 py-2 rounded"
+            <JoditEditor
+              ref={editor}
+              value={richText}
+              tabIndex={1}
+              onChange={(content) => setRichText(content)}
             />
-            {errors.image && <p className="text-red-500 text-sm">{errors.image.message}</p>}
-          </div>
-
-          {/* Category */}
-          <div>
-            <label className="block mb-1 font-medium flex items-center gap-2">
-              <BiCategory /> Category
-            </label>
-            <select
-              {...register("category", { required: "Category is required" })}
-              className="w-full border px-4 py-2 rounded text-gray-500"
-            >
-              <option value="">Select a category</option>
-              <option value="technology">Technology</option>
-              <option value="travel">Travel</option>
-              <option value="food">Food</option>
-              <option value="lifestyle">Lifestyle</option>
-            </select>
-            {errors.category && <p className="text-red-500 text-sm">{errors.category.message}</p>}
-          </div>
-
-          {/* Short Description */}
-          <div>
-            <label className="block mb-1 font-medium flex items-center gap-2">
-              <FiList /> Short Description
-            </label>
-            <textarea
-              {...register("shortDesc", { required: "Short description is required" })}
-              className="w-full border px-4 py-2 rounded"
-              rows={2}
-              placeholder="A short summary of your blog..."
-            ></textarea>
-            {errors.shortDesc && <p className="text-red-500 text-sm">{errors.shortDesc.message}</p>}
-          </div>
-
-          {/* Long Description */}
-          <div>
-            <label className="block mb-1 font-medium flex items-center gap-2">
-              <FiList /> Long Description
-            </label>
-            <textarea
-              {...register("longDesc", { required: "Long description is required" })}
-              className="w-full border px-4 py-2 rounded"
-              rows={5}
-              placeholder="Full content of your blog..."
-            ></textarea>
-            {errors.longDesc && <p className="text-red-500 text-sm">{errors.longDesc.message}</p>}
+            {!richText && <p className="text-red-500 text-sm">Blog content is required</p>}
           </div>
 
           {/* Submit Button */}
@@ -170,7 +166,6 @@ const AddBlog = () => {
         </form>
       </div>
 
-      {/* Animation */}
       <div className="w-full md:w-1/2 max-w-md">
         <DotLottieReact
           src="https://lottie.host/9986b3b6-91e4-4571-b291-d741593ca61f/XaCpGRjghW.lottie"
