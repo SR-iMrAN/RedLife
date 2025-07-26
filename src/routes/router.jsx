@@ -17,6 +17,7 @@ import ManageBlogs from "../pages/Dashboard/ManageBlogs";
 import ManageFundings from "../pages/Dashboard/ManageFundings";
 import ProfilePage from "../pages/Dashboard/ProfilePage";
 import AddBlog from "../pages/Dashboard/AddBlog";
+import EditDonationRequest from "../pages/Dashboard/EditDonationRequest";
 
 import PrivateRoute from "../provider/PrivateRoute";
 import EditBlog from "../pages/Dashboard/EditBlog";
@@ -74,10 +75,11 @@ const router = createBrowserRouter([
         path: "content-management/add-blog",
         element: <AddBlog />,
       },
-      {
-  path: "content-management/edit-blog/:id",
-  element: <EditBlog></EditBlog>,  
-},
+    {
+  path: "edit-donation-request/:id",
+  element: <EditDonationRequest />,
+}
+,
      {
   path: "create-donation-request",
   element: <CreateDonationRequest />,
@@ -85,6 +87,9 @@ const router = createBrowserRouter([
 {
   path: "my-donation-requests",
   element: <MyDonationRequests />,
+},{
+  path: "edit-donation-request/:id",
+  element: <EditDonationRequest />,
 },
       {
         path: "fundings",

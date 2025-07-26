@@ -231,7 +231,7 @@ const DashboardHome = () => {
                             </>
                           )}
                           <Link
-                            to={`/dashboard/edit-request/${r._id}`}
+                            to={`/dashboard/edit-donation-request/${r._id}`}
                             className="text-yellow-600"
                             title="Edit Request"
                           >
