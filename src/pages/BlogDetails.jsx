@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import useAxiosSecure from "../hooks/useAxiosSecure";
-import { FaCalendarAlt, FaUser } from "react-icons/fa";
+import { FaCalendarAlt, FaUser, FaArrowLeft } from "react-icons/fa";
 import { motion } from "framer-motion";
+
+// Utility function to mask email
 const maskEmail = (email) => {
   const [user, domain] = email.split("@");
   if (user.length <= 5) return `***@${domain}`;
@@ -13,13 +15,18 @@ const maskEmail = (email) => {
 
 const BlogDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const axiosSecure = useAxiosSecure();
   const [blog, setBlog] = useState(null);
 
   useEffect(() => {
-    axiosSecure.get(`/blogs/${id}`).then((res) => {
-      setBlog(res.data);
-    });
+    axiosSecure.get(`/public-blogs/${id}`)
+      .then((res) => {
+        setBlog(res.data);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch blog:", err);
+      });
   }, [id, axiosSecure]);
 
   if (!blog) {
@@ -38,9 +45,16 @@ const BlogDetails = () => {
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
     >
+      <button
+        onClick={() => navigate(-1)}
+        className="btn btn-outline btn-sm flex items-center gap-2 mb-4"
+      >
+        <FaArrowLeft /> Back to Dashboard
+      </button>
+
       <img
         src={image}
-        alt={title}
+        alt={title || "Blog Image"}
         className="w-full h-64 object-cover rounded-xl mb-6"
       />
 
@@ -48,12 +62,11 @@ const BlogDetails = () => {
 
       <div className="flex items-center gap-6 text-gray-500 text-sm mb-4">
         <div className="flex items-center gap-1">
-      <FaUser />
-<span>{maskEmail(authorEmail)}</span>
-
+          <FaUser />
+          <span>{maskEmail(authorEmail)}</span>
         </div>
         <div className="flex items-center gap-1">
-          <FaCalendarAlt />{" "}
+          <FaCalendarAlt />
           <span>{new Date(createdAt).toLocaleDateString()}</span>
         </div>
       </div>

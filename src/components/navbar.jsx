@@ -24,21 +24,21 @@ const Navbar = () => {
       >
         Home
       </NavLink>
-      <NavLink
+      {/* <NavLink
         to="/donate-blood"
         className={({ isActive }) =>
           isActive ? 'text-red-600 font-semibold border-b-2 border-red-600' : 'hover:text-red-600'
         }
       >
         Donate Blood
-      </NavLink>
+      </NavLink> */}
       <NavLink
         to="/donation-requests"
         className={({ isActive }) =>
           isActive ? 'text-red-600 font-semibold border-b-2 border-red-600' : 'hover:text-red-600'
         }
       >
-        Requests
+       Donation Requests
       </NavLink>
       <NavLink
         to="/blogs"

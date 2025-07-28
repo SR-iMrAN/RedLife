@@ -3,6 +3,9 @@ import { MdVolunteerActivism, MdEmail, MdPhone, MdLocationOn } from 'react-icons
 import { motion } from 'framer-motion';
 import Swal from 'sweetalert2';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import { useContext } from "react";
+import { AuthContext } from "../provider/AuthProvider"; 
+import { useNavigate } from "react-router-dom";
 
 const fadeUp = {
   initial: { opacity: 0, y: 50 },
@@ -23,14 +26,22 @@ const Home = () => {
     });
     e.target.reset();
   };
+const { user } = useContext(AuthContext);
+const navigate = useNavigate();
 
-  const handleAlreadyDonor = () => {
+const handleAlreadyDonor = () => {
+  if (user) {
     Swal.fire({
-      icon: 'info',
-      title: 'You are already a donor!',
+      icon: 'success',
+      title: 'Thank you!',
+      text: 'You are already a valued donor.',
       confirmButtonColor: '#dc2626',
     });
-  };
+  } else {
+    navigate("/auth/register"); 
+  }
+};
+
 
   return (
     <div className="text-gray-800">

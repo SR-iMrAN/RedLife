@@ -5,11 +5,12 @@ import Swal from 'sweetalert2';
 import { AuthContext } from '../provider/AuthProvider';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
-import { MdLock, MdEmail } from 'react-icons/md';
+import { MdLock, MdEmail, MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const { signIn, setUser, signInWithGoogle } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
@@ -135,19 +136,26 @@ const Login = () => {
                 required
               />
             </div>
-            <div>
-              <label className="label-text flex items-center gap-1">
+            <div className="relative">
+              <label className="label-text flex items-center gap-1 mb-1">
                 <MdLock /> Password
               </label>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 placeholder="Enter password"
-                className="input input-bordered w-full"
+                className="input input-bordered w-full pr-10"
                 value={formData.password}
                 onChange={handleChange}
                 required
               />
+              <span
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-10 text-gray-600 cursor-pointer"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <MdVisibilityOff size={24} /> : <MdVisibility size={24} />}
+              </span>
               <div className="text-right mt-1">
                 <Link
                   to={`/auth/forgot-password?email=${formData.email || ''}`}

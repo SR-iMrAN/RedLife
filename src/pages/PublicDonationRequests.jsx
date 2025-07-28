@@ -11,7 +11,7 @@ const PublicDonationRequests = () => {
   const { data: requests = [], isLoading } = useQuery({
     queryKey: ["public-donation-requests"],
     queryFn: async () => {
-      const res = await axiosSecure.get("/donation-requests");
+      const res = await axiosSecure.get("/bloodrequests/all");
       return res.data;
     },
   });
