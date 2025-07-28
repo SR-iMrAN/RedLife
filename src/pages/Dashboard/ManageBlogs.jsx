@@ -18,7 +18,7 @@ import useAuth from "../../hooks/useAuth";
 
 import Swal from "sweetalert2";
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 5;
 
 const ManageBlogs = () => {
 //   const { role } = useContext(AuthContext);

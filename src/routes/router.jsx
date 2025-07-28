@@ -23,6 +23,8 @@ import PrivateRoute from "../provider/PrivateRoute";
 import EditBlog from "../pages/Dashboard/EditBlog";
 import AllDonationRequests from "../pages/Dashboard/AllDonationRequests";
 import PublicDonationRequests from "../pages/PublicDonationRequests";
+import BlogList from "../pages/BlogList";
+import BlogDetails from "../pages/BlogDetails";
 
 const router = createBrowserRouter([
   {
@@ -58,7 +60,14 @@ const router = createBrowserRouter([
     </PrivateRoute>
   ),
 },
-
+{
+  path: "blogs",
+  element: <BlogList></BlogList>,
+},
+{
+  path:"/blogs/:id",
+element: <BlogDetails></BlogDetails>
+}
     ],
   },
   {
@@ -90,6 +99,11 @@ const router = createBrowserRouter([
         path: "content-management/add-blog",
         element: <AddBlog />,
       },
+      {
+        path: "content-management/edit-blog/:id",
+        element: <EditBlog></EditBlog>,
+      },
+
     {
   path: "edit-donation-request/:id",
   element: <EditDonationRequest />,
