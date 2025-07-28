@@ -33,7 +33,7 @@ const ProfilePage = () => {
   useEffect(() => {
     if (user?.email) {
       axios
-        .get(`http://localhost:3004/users/${user.email}`)
+        .get(`http://localhost:3001/users/${user.email}`)
         .then((res) => {
           setProfileData(res.data);
           // Map backend photoURL to form.avatar for consistency in UI
@@ -100,7 +100,7 @@ const ProfilePage = () => {
     try {
       const token = await user.getIdToken(); // Firebase token
       // console.log("JWT Token:", token);
-      await axios.patch(`http://localhost:3004/users/update-profile`, updateData, {
+      await axios.patch(`http://localhost:3001/users/update-profile`, updateData, {
         headers: {
           Authorization: `Bearer ${token}`,
           

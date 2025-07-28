@@ -12,7 +12,7 @@ const useAuth = () => {
       if (user?.email) {
         try {
           const res = await axios.get(
-            `http://localhost:3004/users/${user.email}`
+            `http://localhost:3001/users/${user.email}`
           );
           setRole(res.data?.role || null);
         } catch (error) {

@@ -61,7 +61,7 @@ const SearchDonor = () => {
 
     try {
       const query = new URLSearchParams(filters).toString();
-      const res = await fetch(`http://localhost:3004/donors?${query}`);
+      const res = await fetch(`http://localhost:3001/donors?${query}`);
       const data = await res.json();
       setDonors(data);
       setSearched(true);

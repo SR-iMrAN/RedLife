@@ -22,7 +22,7 @@ const AuthProvider = ({ children }) => {
 
 
   const axiosSecure = axios.create({
-    baseURL: 'http://localhost:3004/', 
+    baseURL: 'http://localhost:3001/', 
   });
 
   
