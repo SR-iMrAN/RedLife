@@ -2,13 +2,16 @@ import { NavLink, Link } from 'react-router-dom';
 import { useState, useContext } from 'react';
 import { FiMenu, FiX, FiLogIn, FiUserPlus, FiLogOut } from 'react-icons/fi';
 import { AuthContext } from '../provider/AuthProvider';
+import { FaChevronDown } from 'react-icons/fa';
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const { user, logOut } = useContext(AuthContext);
 
   const handleLogout = () => {
     logOut().catch(() => {});
+    setDropdownOpen(false);
   };
 
   const navLinks = (
@@ -38,13 +41,23 @@ const Navbar = () => {
         Requests
       </NavLink>
       <NavLink
-        to="/dashboard"
+        to="/blogs"
         className={({ isActive }) =>
           isActive ? 'text-red-600 font-semibold border-b-2 border-red-600' : 'hover:text-red-600'
         }
       >
-        Dashboard
+        Blog
       </NavLink>
+      {user && (
+        <NavLink
+          to="/funding"
+          className={({ isActive }) =>
+            isActive ? 'text-red-600 font-semibold border-b-2 border-red-600' : 'hover:text-red-600'
+          }
+        >
+          Funding
+        </NavLink>
+      )}
     </>
   );
 
@@ -52,7 +65,6 @@ const Navbar = () => {
     <nav className="bg-white shadow sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
         <div className='flex gap-3 items-center'>
-          {/* <img src="" alt="RedLife" className="w-10 h-auto" /> */}
           <Link to="/" className="text-2xl font-bold text-red-600">RedLife</Link>
         </div>
 
@@ -60,22 +72,39 @@ const Navbar = () => {
           {navLinks}
         </div>
 
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-4 relative">
           {user ? (
-            <>
-              <img
-                src={user.photoURL || 'https://i.ibb.co/8d8hKt3/default-avatar.png'}
-                alt="Profile"
-                className="w-8 h-8 rounded-full"
-              />
+            <div className="relative">
               <button
-                onClick={handleLogout}
-                className="flex items-center text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 gap-1"
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="flex items-center gap-2"
               >
-                <FiLogOut />
-                Logout
+                <img
+                  src={user.photoURL || 'https://i.ibb.co/8d8hKt3/default-avatar.png'}
+                  alt="Profile"
+                  className="w-8 h-8 rounded-full"
+                />
+                <FaChevronDown className="text-gray-600" />
               </button>
-            </>
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-2 bg-white border rounded shadow-md w-40 z-10">
+                  <Link
+                    to="/dashboard"
+                    onClick={() => setDropdownOpen(false)}
+                    className="block px-4 py-2 hover:bg-gray-100 text-sm"
+                  >
+                    Dashboard
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 text-sm hover:bg-red-100 text-red-600"
+                  >
+                    <FiLogOut className="inline-block mr-1" />
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <>
               <Link
@@ -108,12 +137,10 @@ const Navbar = () => {
           <div className="flex flex-col gap-2">{navLinks}</div>
 
           {user ? (
-            <div className="flex items-center gap-2 mt-3">
-              <img
-                src={user.photoURL || 'https://i.ibb.co/8d8hKt3/default-avatar.png'}
-                alt="Profile"
-                className="w-8 h-8 rounded-full"
-              />
+            <div className="flex flex-col gap-2 mt-3">
+              <Link to="/dashboard" className="text-sm text-gray-700 hover:text-red-600">
+                Dashboard
+              </Link>
               <button
                 onClick={handleLogout}
                 className="flex items-center text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 gap-1"
