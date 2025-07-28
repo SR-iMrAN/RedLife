@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
@@ -12,6 +12,7 @@ import {
   FaCheck,
   FaTimes,
 } from "react-icons/fa";
+import { BsThreeDotsVertical } from "react-icons/bs";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import useAuth from "../../hooks/useAuth";
 import { Link } from "react-router-dom";
@@ -22,6 +23,8 @@ import Swal from "sweetalert2";
 const DashboardHome = () => {
   const { user, role } = useAuth();
   const axiosSecure = useAxiosSecure();
+  const [openDropdownId, setOpenDropdownId] = useState(null);
+  const dropdownRefs = useRef({});
 
   // Admin/Volunteer Stats
   const { data: totalDonors = 0 } = useQuery({
@@ -59,6 +62,20 @@ const DashboardHome = () => {
     enabled: role === "admin" || role === "volunteer",
   });
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const dropdownEl = dropdownRefs.current[openDropdownId];
+      if (dropdownEl && !dropdownEl.contains(event.target)) {
+        setOpenDropdownId(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [openDropdownId]);
+
   // Donor Recent Requests
   const {
     data: requests = [],
@@ -78,6 +95,7 @@ const DashboardHome = () => {
       await axiosSecure.patch(`/donations/${id}/status`, { status });
       toast.success(`Marked as ${status}`);
       refetchDonorRequests();
+      setOpenDropdownId(null);
     } catch {
       toast.error("Failed to update status");
     }
@@ -97,8 +115,9 @@ const DashboardHome = () => {
     try {
       await axiosSecure.delete(`/donation-requests/${id}`);
       toast.success("Deleted successfully");
-      refetchDonationRequests(); // Use correct refetch for deletion
-      refetchDonorRequests();    // Optional: Also refresh donor view
+      refetchDonationRequests();
+      refetchDonorRequests();
+      setOpenDropdownId(null);
     } catch {
       toast.error("Failed to delete");
     }
@@ -174,7 +193,6 @@ const DashboardHome = () => {
                       <th className="p-3">Time</th>
                       <th className="p-3">Blood</th>
                       <th className="p-3">Status</th>
-                      {/* <th className="p-3">Donor Info</th> */}
                       <th className="p-3">Actions</th>
                     </tr>
                   </thead>
@@ -203,54 +221,64 @@ const DashboardHome = () => {
                             {r.status}
                           </span>
                         </td>
-                        {/* <td className="p-3">
-                          {r.status === "inprogress" && r.donor?.name && (
-                            <>
-                              <p>{r.donor.name}</p>
-                              <p className="text-xs text-gray-500">{r.donor.email}</p>
-                            </>
-                          )}
-                        </td> */}
-                        <td className="p-3 space-x-2 flex flex-wrap">
-                          {r.status === "inprogress" && (
-                            <>
-                              <button
-                                onClick={() => handleStatusChange(r._id, "done")}
-                                className="text-green-600"
-                                title="Mark as Done"
-                              >
-                                <FaCheck />
-                              </button>
-                              <button
-                                onClick={() => handleStatusChange(r._id, "canceled")}
-                                className="text-red-600"
-                                title="Mark as Canceled"
-                              >
-                                <FaTimes />
-                              </button>
-                            </>
-                          )}
-                          <Link
-                            to={`/dashboard/edit-donation-request/${r._id}`}
-                            className="text-yellow-600"
-                            title="Edit Request"
+                        <td className="p-3 relative text-center">
+                          <div
+                            className="relative inline-block text-left"
+                            ref={(el) => (dropdownRefs.current[r._id] = el)}
                           >
-                            <FaEdit />
-                          </Link>
-                          <button
-                            onClick={() => handleDelete(r._id)}
-                            className="text-red-600"
-                            title="Delete Request"
-                          >
-                            <FaTrash />
-                          </button>
-                          <Link
-                            to={`/dashboard/request/${r._id}`}
-                            className="text-blue-600"
-                            title="View Request Details"
-                          >
-                            <FaEye />
-                          </Link>
+                            <button
+                              type="button"
+                              className="p-2 text-gray-600 hover:text-black"
+                              onClick={() =>
+                                setOpenDropdownId(openDropdownId === r._id ? null : r._id)
+                              }
+                            >
+                              <BsThreeDotsVertical className="text-xl" />
+                            </button>
+
+                            {openDropdownId === r._id && (
+                              <div className="origin-top-right absolute right-0 mt-2 w-52 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+                                <div className="py-1" role="menu" aria-orientation="vertical">
+                                  {r.status === "inprogress" && (
+                                    <>
+                                      <button
+                                        onClick={() => handleStatusChange(r._id, "done")}
+                                        className="flex items-center gap-2 w-full px-4 py-2 text-sm text-green-600 hover:bg-gray-100"
+                                      >
+                                        <FaCheck /> Mark as Done
+                                      </button>
+                                      <button
+                                        onClick={() => handleStatusChange(r._id, "canceled")}
+                                        className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                      >
+                                        <FaTimes /> Cancel Request
+                                      </button>
+                                    </>
+                                  )}
+                                  <Link
+                                    to={`/dashboard/edit-donation-request/${r._id}`}
+                                    className="flex items-center gap-2 px-4 py-2 text-sm text-yellow-600 hover:bg-gray-100"
+                                    onClick={() => setOpenDropdownId(null)}
+                                  >
+                                    <FaEdit /> Edit Request
+                                  </Link>
+                                  <button
+                                    onClick={() => handleDelete(r._id)}
+                                    className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-700 hover:bg-gray-100"
+                                  >
+                                    <FaTrash /> Delete
+                                  </button>
+                                  <Link
+                                    to={`/dashboard/request/${r._id}`}
+                                    className="flex items-center gap-2 px-4 py-2 text-sm text-blue-600 hover:bg-gray-100"
+                                    onClick={() => setOpenDropdownId(null)}
+                                  >
+                                    <FaEye /> View Details
+                                  </Link>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}
