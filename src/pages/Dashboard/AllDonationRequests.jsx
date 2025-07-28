@@ -1,111 +1,195 @@
-import React, { useContext, useState } from "react";
-import { AuthContext } from "../../provider/AuthProvider";
-import useAxiosSecure from "../../hooks/useAxiosSecure";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  FaSearch,
-  FaClock,
-  FaCheck,
-  FaTimes,
-  FaSpinner,
-  FaTint,
-} from "react-icons/fa";
-import districts from "../../assets/districts.json"; 
+import { Link } from "react-router-dom";
+import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
+import useAuth from "../../hooks/useAuth";
+import useAxiosSecure from "../../hooks/useAxiosSecure";
+import Swal from "sweetalert2";
+import toast from "react-hot-toast";
 
-const statusIcons = {
-  pending: <FaClock className="text-yellow-500" />,
-  inprogress: <FaSpinner className="text-blue-500 animate-spin" />,
-  done: <FaCheck className="text-green-600" />,
-  canceled: <FaTimes className="text-red-600" />,
-};
-
-const AllBloodDonationRequests = () => {
-  const { user } = useContext(AuthContext);
+const AllDonationRequests = () => {
+  const { role } = useAuth();
   const axiosSecure = useAxiosSecure();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState("");
 
-  const limit = 5;
+  const [statusFilter, setStatusFilter] = useState("all");
 
-  const { data: requests = { data: [], count: 0 }, isLoading } = useQuery({
-    queryKey: ["all-donation-requests", currentPage, statusFilter],
+  const {
+    data: requests = [],
+    refetch,
+    isLoading,
+  } = useQuery({
+    queryKey: ["all-donation-requests"],
     queryFn: async () => {
-      const res = await axiosSecure.get(
-        `all-requests?page=${currentPage}&limit=${limit}&status=${statusFilter}`
-      );
+      const res = await axiosSecure.get("/donation-requests");
       return res.data;
     },
-    enabled: !!user?.email,
+    enabled: role === "admin" || role === "volunteer",
   });
 
-  const getDistrictName = (districtId) => {
-    const found = districts.find((d) => d.id == districtId);
-    return found?.name || "Unknown";
+  const filteredRequests =
+    statusFilter === "all"
+      ? requests
+      : requests.filter((r) => r.status === statusFilter);
+
+  const handleStatusChange = async (id, status) => {
+    try {
+      await axiosSecure.patch(`/donations/${id}/status`, { status });
+      toast.success(`Marked as ${status}`);
+      refetch();
+    } catch {
+      toast.error("Failed to update status");
+    }
   };
 
-  const handleFilterChange = (e) => {
-    setStatusFilter(e.target.value);
-    setCurrentPage(1);
-  };
+  const handleDelete = async (id) => {
+    const { isConfirmed } = await Swal.fire({
+      title: "Are you sure?",
+      text: "This action cannot be undone!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it!",
+    });
 
-  const totalPages = Math.ceil((requests.count || 0) / limit);
+    if (!isConfirmed) return;
+
+    try {
+      await axiosSecure.delete(`/donation-requests/${id}`);
+      toast.success("Deleted successfully");
+      refetch();
+    } catch {
+      toast.error("Failed to delete");
+    }
+  };
 
   return (
-    <div className="p-4 md:p-6">
-      <div className="mb-4 flex flex-col md:flex-row items-center justify-between gap-2">
-        <h2 className="text-xl font-semibold flex items-center gap-2">
-          <FaTint className="text-red-500" />
-          All Blood Donation Requests
-        </h2>
-        <div className="flex items-center gap-2">
-          <FaSearch className="text-gray-500" />
-          <select
-            onChange={handleFilterChange}
-            value={statusFilter}
-            className="select select-bordered select-sm"
-          >
-            <option value="">All</option>
-            <option value="pending">Pending</option>
-            <option value="inprogress">In Progress</option>
-            <option value="done">Done</option>
-            <option value="canceled">Canceled</option>
-          </select>
-        </div>
+    <div className="p-4 md:p-8">
+      <h2 className="text-2xl font-bold mb-4">All Donation Requests</h2>
+
+      {/* Status Filter Dropdown */}
+      <div className="mb-4">
+        <label htmlFor="statusFilter" className="mr-2 font-medium">
+          Filter by Status:
+        </label>
+        <select
+          id="statusFilter"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="p-2 border rounded"
+        >
+          <option value="all">All</option>
+          <option value="pending">Pending</option>
+          <option value="inprogress">In Progress</option>
+          <option value="done">Done</option>
+          <option value="canceled">Canceled</option>
+        </select>
       </div>
 
       {isLoading ? (
-        <div className="text-center py-8">Loading...</div>
-      ) : requests.data.length === 0 ? (
-        <div className="text-center text-gray-500">
-          No donation requests found.
-        </div>
+        <p>Loading...</p>
+      ) : filteredRequests.length === 0 ? (
+        <p>No donation requests found for selected status.</p>
       ) : (
-        <div className="overflow-x-auto rounded shadow">
-          <table className="table table-zebra text-sm">
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white shadow rounded">
             <thead>
-              <tr>
-                <th>#</th>
-                <th>Recipient Name</th>
-                <th>Blood Group</th>
-                <th>Location</th>
-                <th>Date & Time</th>
-                <th>Status</th>
+              <tr className="bg-gray-100 text-left text-sm uppercase text-gray-600">
+                <th className="p-3">Recipient</th>
+                <th className="p-3">Location</th>
+                <th className="p-3">Date</th>
+                <th className="p-3">Time</th>
+                <th className="p-3">Blood</th>
+                <th className="p-3">Status</th>
+                <th className="p-3">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {requests.data.map((req, index) => (
-                <tr key={req._id}>
-                  <td>{(currentPage - 1) * limit + index + 1}</td>
-                  <td>{req.recipientName}</td>
-                  <td>{req.bloodGroup}</td>
-                  <td>
-                    {getDistrictName(req.recipientDistrict)}, {req.recipientUpazila}
+              {filteredRequests.map((r) => (
+                <tr key={r._id} className="border-b text-sm hover:bg-red-50">
+                  <td className="p-3">{r.recipientName}</td>
+                  <td className="p-3">
+                    {r.recipientDistrict}, {r.recipientUpazila}
                   </td>
-                  <td>
-                    {req.donationDate} at {req.donationTime}
+                  <td className="p-3">{r.donationDate}</td>
+                  <td className="p-3">{r.donationTime}</td>
+                  <td className="p-3 font-bold text-red-600">{r.bloodGroup}</td>
+                  <td className="p-3 capitalize">
+                    <span
+                      className={`px-2 py-1 rounded text-white text-xs ${
+                        r.status === "pending"
+                          ? "bg-yellow-500"
+                          : r.status === "inprogress"
+                          ? "bg-blue-500"
+                          : r.status === "done"
+                          ? "bg-green-600"
+                          : "bg-red-600"
+                      }`}
+                    >
+                      {r.status}
+                    </span>
                   </td>
-                  <td className="capitalize flex items-center gap-1">
-                    {statusIcons[req.status]} {req.status}
+                  <td className="p-3 space-x-2 flex flex-wrap items-center">
+                    {/* Admin-only: Edit, Delete, View */}
+                    {role === "admin" && (
+                      <>
+                        <Link
+                          to={`/dashboard/edit-donation-request/${r._id}`}
+                          className="text-yellow-600"
+                          title="Edit Request"
+                        >
+                          <FaEdit />
+                        </Link>
+                        <button
+                          onClick={() => handleDelete(r._id)}
+                          className="text-red-600"
+                          title="Delete Request"
+                        >
+                          <FaTrash />
+                        </button>
+                        <Link
+                          to={`/dashboard/request/${r._id}`}
+                          className="text-blue-600"
+                          title="View Request Details"
+                        >
+                          <FaEye />
+                        </Link>
+                      </>
+                    )}
+
+                    {/* Volunteer or Admin: Dropdown for status change */}
+                    {(role === "admin" ||
+                      (role === "volunteer" &&
+                        (r.status === "pending" || r.status === "inprogress"))) && (
+                      <select
+                        onChange={(e) => {
+                          const newStatus = e.target.value;
+                          if (newStatus !== "") handleStatusChange(r._id, newStatus);
+                        }}
+                        className="text-sm px-2 py-1 border rounded bg-white"
+                        defaultValue=""
+                      >
+                        <option value="" disabled>
+                          {role === "admin" ? "Change Status" : "Actions"}
+                        </option>
+                        {role === "admin" &&
+                          ["pending", "inprogress", "done", "canceled"]
+                            .filter((s) => s !== r.status)
+                            .map((statusOption) => (
+                              <option key={statusOption} value={statusOption}>
+                                Mark as {statusOption}
+                              </option>
+                            ))}
+
+                        {role === "volunteer" && r.status === "pending" && (
+                          <option value="inprogress">Mark as In Progress</option>
+                        )}
+                        {role === "volunteer" && r.status === "inprogress" && (
+                          <>
+                            <option value="done">Mark as Done</option>
+                            <option value="canceled">Mark as Canceled</option>
+                          </>
+                        )}
+                      </select>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -113,23 +197,8 @@ const AllBloodDonationRequests = () => {
           </table>
         </div>
       )}
-
-      {/* Pagination */}
-      <div className="flex justify-center mt-4 gap-1 flex-wrap">
-        {[...Array(totalPages).keys()].map((num) => (
-          <button
-            key={num}
-            onClick={() => setCurrentPage(num + 1)}
-            className={`btn btn-sm ${
-              currentPage === num + 1 ? "btn-primary" : "btn-outline"
-            }`}
-          >
-            {num + 1}
-          </button>
-        ))}
-      </div>
     </div>
   );
 };
 
-export default AllBloodDonationRequests;
+export default AllDonationRequests;

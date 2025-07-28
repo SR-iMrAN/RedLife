@@ -118,7 +118,7 @@ const DashboardLayout = () => {
               </>
             )}
 
-            {role === "volunteer"|| "admin" && (
+            {role !== "donor" && (
               <NavLink
                 to="/dashboard/donation-requests"
                 className={({ isActive }) =>
