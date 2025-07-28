@@ -192,6 +192,7 @@ const DashboardHome = () => {
                       <th className="p-3">Date</th>
                       <th className="p-3">Time</th>
                       <th className="p-3">Blood</th>
+                      <th className="p-3">Donor</th>
                       <th className="p-3">Status</th>
                       <th className="p-3">Actions</th>
                     </tr>
@@ -206,6 +207,17 @@ const DashboardHome = () => {
                         <td className="p-3">{r.donationDate}</td>
                         <td className="p-3">{r.donationTime}</td>
                         <td className="p-3 font-bold text-red-600">{r.bloodGroup}</td>
+                         <td className="p-3">
+  {r.status === "inprogress" ? (
+    <>
+      <p className="font-semibold">{r.requesterName}</p>
+      <p className="text-sm text-gray-500">{r.requesterEmail}</p>
+    </>
+  ) : (
+    <span className="text-gray-400 italic">Not Assigned</span>
+  )}
+</td>
+
                         <td className="p-3 capitalize">
                           <span
                             className={`px-2 py-1 rounded text-white text-xs ${
