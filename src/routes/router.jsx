@@ -14,7 +14,7 @@ import ManageUsers from "../pages/Dashboard/ManageUsers";
 import CreateDonationRequest from "../pages/Dashboard/CreateDonationRequest";
 import MyDonationRequests from "../pages/Dashboard/MyDonationRequests";
 import ManageBlogs from "../pages/Dashboard/ManageBlogs";
-import ManageFundings from "../pages/Dashboard/ManageFundings";
+
 import ProfilePage from "../pages/Dashboard/ProfilePage";
 import AddBlog from "../pages/Dashboard/AddBlog";
 import EditDonationRequest from "../pages/Dashboard/EditDonationRequest";
@@ -25,6 +25,7 @@ import AllDonationRequests from "../pages/Dashboard/AllDonationRequests";
 import PublicDonationRequests from "../pages/PublicDonationRequests";
 import BlogList from "../pages/BlogList";
 import BlogDetails from "../pages/BlogDetails";
+import Fundingpage from "../pages/Fundingpage";
 
 const router = createBrowserRouter([
   {
@@ -67,7 +68,12 @@ const router = createBrowserRouter([
 {
   path:"/blogs/:id",
 element: <BlogDetails></BlogDetails>
-}
+} ,{
+        path: "funding",
+        element:<PrivateRoute>
+        <Fundingpage></Fundingpage>
+       </PrivateRoute> ,
+      }
     ],
   },
   {
@@ -131,10 +137,7 @@ element: <BlogDetails></BlogDetails>
   path: "request/:id",
   element: <DonationRequestDetails />,
 },
-      {
-        path: "fundings",
-        element: <ManageFundings />,
-      },
+     
     ],
   },
 ]);
