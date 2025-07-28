@@ -1,15 +1,30 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
-import { FaArrowLeft, FaHome, FaUser, FaHospital, FaTint, FaMapMarkedAlt, FaClock, FaCalendarAlt, FaEnvelope, FaCommentDots } from "react-icons/fa";
+import { AuthContext } from "../../provider/AuthProvider";
+import {
+  FaArrowLeft,
+  FaHome,
+  FaUser,
+  FaHospital,
+  FaTint,
+  FaMapMarkedAlt,
+  FaClock,
+  FaCalendarAlt,
+  FaEnvelope,
+  FaCommentDots,
+} from "react-icons/fa";
 import { toast } from "react-hot-toast";
 
 const DonationRequestDetails = () => {
   const { id } = useParams();
   const axiosSecure = useAxiosSecure();
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+
   const [request, setRequest] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -27,6 +42,25 @@ const DonationRequestDetails = () => {
     fetchDetails();
   }, [id, axiosSecure]);
 
+  const handleConfirmDonation = async () => {
+    try {
+      await axiosSecure.patch(`/donation-requests/${id}`, {
+        status: "inprogress",
+        donorName: user?.displayName,
+        donorEmail: user?.email,
+      });
+      toast.success("Donation confirmed! Status updated.");
+      setShowModal(false);
+      setRequest((prev) => ({
+        ...prev,
+        status: "inprogress",
+      }));
+    } catch (err) {
+      console.error("Failed to update donation status", err);
+      toast.error("Failed to confirm donation.");
+    }
+  };
+
   if (loading) return <div className="text-center py-10 font-semibold">Loading...</div>;
   if (!request) return <div className="text-center py-10 text-red-600">No request found</div>;
 
@@ -34,7 +68,7 @@ const DonationRequestDetails = () => {
     <div className="max-w-4xl mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
         <button onClick={() => navigate(-1)} className="btn btn-outline btn-sm flex items-center gap-2">
-          <FaArrowLeft /> Back to Dashboard
+          <FaArrowLeft /> Back 
         </button>
         <Link to="/" className="btn btn-outline btn-sm flex items-center gap-2">
           <FaHome /> Home
@@ -85,7 +119,62 @@ const DonationRequestDetails = () => {
             </span>
           </p>
         </div>
+
+        {/* Donate Button */}
+        {request.status === "pending" && (
+          <div className="text-center pt-6">
+            <button
+              onClick={() => setShowModal(true)}
+              className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded"
+            >
+              Donate
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h3 className="text-xl font-bold mb-4 text-red-600">Confirm Donation</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block font-medium">Donor Name</label>
+                <input
+                  type="text"
+                  value={user?.displayName}
+                  readOnly
+                  className="w-full border px-3 py-2 rounded bg-gray-100"
+                />
+              </div>
+              <div>
+                <label className="block font-medium">Donor Email</label>
+                <input
+                  type="email"
+                  value={user?.email}
+                  readOnly
+                  className="w-full border px-3 py-2 rounded bg-gray-100"
+                />
+              </div>
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmDonation}
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                  Confirm Donation
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
