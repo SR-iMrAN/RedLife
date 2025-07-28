@@ -198,7 +198,7 @@ const DashboardHome = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {requests.slice(0, 3).map((r) => (
+                    {requests.slice(0, 5).map((r) => (
                       <tr key={r._id} className="border-b text-sm hover:bg-red-50">
                         <td className="p-3">{r.recipientName}</td>
                         <td className="p-3">

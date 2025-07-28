@@ -4,9 +4,9 @@ import useAxiosSecure from "../../hooks/useAxiosSecure";
 import useAuth from "../../hooks/useAuth";
 import districtsData from "../../assets/districts.json";
 import upazilasData from "../../assets/upazilas.json";
-import { FaCalendarAlt, FaClock, FaSave } from "react-icons/fa";
+import { FaCalendarAlt, FaClock, FaSave ,FaArrowLeft, FaHome} from "react-icons/fa";
 import { toast } from "react-hot-toast";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams,Link } from "react-router-dom";
 
 const EditDonationRequest = () => {
   const { user } = useAuth();
@@ -116,7 +116,16 @@ const EditDonationRequest = () => {
   if (loading) return <div className="text-center py-10">Loading...</div>;
 
   return (
+    
     <div className="max-w-3xl mx-auto p-6">
+       <div className="flex justify-between items-center mb-6">
+        <button onClick={() => navigate(-1)} className="btn btn-outline btn-sm flex items-center gap-2">
+          <FaArrowLeft /> Back to Dashboard
+        </button>
+        <Link to="/" className="btn btn-outline btn-sm flex items-center gap-2">
+          <FaHome /> Home
+        </Link>
+      </div>
       <h2 className="text-2xl font-bold mb-6 text-center">Edit Donation Request</h2>
 
       <form

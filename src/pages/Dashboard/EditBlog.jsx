@@ -132,6 +132,7 @@ const response = await axiosSecure.patch(`/blogs/${id}`, blogData);
       className="min-h-screen bg-emerald-200 flex flex-col md:flex-row items-center justify-center px-4 py-10 gap-10"
     >
       <div className="w-full md:w-1/2">
+      
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-white p-6 shadow-md rounded-lg">
           <h2 className="text-2xl font-semibold text-center mb-4 flex items-center justify-center gap-2">
             <FiFileText /> Edit Blog
@@ -224,6 +225,7 @@ const response = await axiosSecure.patch(`/blogs/${id}`, blogData);
       {/* Lottie animation */}
      
     </motion.section>
+    
   );
 };
 
