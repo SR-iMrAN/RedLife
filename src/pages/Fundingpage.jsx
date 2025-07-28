@@ -5,7 +5,7 @@ import {
   FaPlusCircle,
   FaCheckCircle,
   FaTimesCircle,
-  FaCreditCard,
+  FaCreditCard,FaDonate, 
 } from "react-icons/fa";
 import { GiMoneyStack } from "react-icons/gi";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -109,6 +109,19 @@ const Fundingpage = () => {
 
   return (
     <div className="max-w-5xl mx-auto p-6 md:p-10 mt-8 bg-white rounded-xl shadow-lg">
+      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-4 rounded-md mb-6 shadow flex items-start gap-3">
+  <FaDonate className="text-3xl mt-1 text-red-500 animate-bounce" />
+  <div>
+    <p className="text-lg font-semibold flex items-center gap-2">
+      
+      Your generosity saves lives<FaHeart className="text-red-500" />
+    </p>
+    <p className="text-sm text-gray-700">
+      Every dollar you donate brings us closer to ensuring no one has to wait for blood in a moment of crisis.
+      Together, we can create a future where every heartbeat is protected. Thank you for standing with <span className="text-sm font-bold"><span className="text-red-600">Red</span><span className="text-green-600">Life</span></span>.
+    </p>
+  </div>
+</div>
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
@@ -121,6 +134,7 @@ const Fundingpage = () => {
           <FaPlusCircle /> Give Fund <GiMoneyStack />
         </button>
       </div>
+{/* Motivational Message */}
 
       {/* Donation Form */}
       {showForm && (
@@ -134,7 +148,7 @@ const Fundingpage = () => {
             type="number"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            placeholder="Enter amount e.g. 25"
+            placeholder="Enter amount e.g. 25 (Minimum $1)"
             className="input input-bordered w-full mb-4"
             min="1"
             required
@@ -168,7 +182,7 @@ const Fundingpage = () => {
               <th>#</th>
               <th>User</th>
               <th>Email</th>
-              <th>Amount (USD)</th>
+              <th>Amount ( $ USD)</th>
               <th>Date</th>
             </tr>
           </thead>

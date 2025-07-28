@@ -48,7 +48,7 @@ const CheckoutForm = ({ amount, handleRequest }) => {
         text: result.error.message,
       });
     } else if (result.paymentIntent.status === "succeeded") {
-      await handleRequest(); // Custom logic after payment
+      await handleRequest(); 
       Swal.fire({
         icon: "success",
         title: "Payment Successful!",

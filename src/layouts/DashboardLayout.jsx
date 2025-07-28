@@ -148,7 +148,7 @@ const DashboardLayout = () => {
       Manage Blogs
     </NavLink>
 
-    <NavLink
+    {/* <NavLink
       to="/dashboard/fundings"
       className={({ isActive }) =>
         isActive
@@ -159,7 +159,7 @@ const DashboardLayout = () => {
     >
       <FaDonate className="inline mr-2" />
       Manage Fundings
-    </NavLink>
+    </NavLink> */}
   </>
 )}
 

@@ -3,7 +3,7 @@ import { useState, useContext } from 'react';
 import { FiMenu, FiX, FiLogIn, FiUserPlus, FiLogOut } from 'react-icons/fi';
 import { AuthContext } from '../provider/AuthProvider';
 import { FaChevronDown } from 'react-icons/fa';
-
+import { MdDashboardCustomize } from "react-icons/md";
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -65,7 +65,7 @@ const Navbar = () => {
     <nav className="bg-white shadow sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
         <div className='flex gap-3 items-center'>
-          <Link to="/" className="text-2xl font-bold text-red-600">RedLife</Link>
+          <Link to="/" className="text-2xl font-bold text-red-600">Red<span className="text-green-600">L</span>i<span className="text-green-600">fe</span></Link>
         </div>
 
         <div className="hidden md:flex items-center gap-8">
@@ -88,13 +88,15 @@ const Navbar = () => {
               </button>
               {dropdownOpen && (
                 <div className="absolute right-0 mt-2 bg-white border rounded shadow-md w-40 z-10">
-                  <Link
-                    to="/dashboard"
-                    onClick={() => setDropdownOpen(false)}
-                    className="block px-4 py-2 hover:bg-gray-100 text-sm"
-                  >
-                    Dashboard
-                  </Link>
+                 <Link
+  to="/dashboard"
+  onClick={() => setDropdownOpen(false)}
+  className="block px-4 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"
+>
+  <MdDashboardCustomize />
+  Dashboard
+</Link>
+
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2 text-sm hover:bg-red-100 text-red-600"
@@ -139,7 +141,7 @@ const Navbar = () => {
           {user ? (
             <div className="flex flex-col gap-2 mt-3">
               <Link to="/dashboard" className="text-sm text-gray-700 hover:text-red-600">
-                Dashboard
+               <MdDashboardCustomize /> Dashboard
               </Link>
               <button
                 onClick={handleLogout}
