@@ -1,12 +1,58 @@
 import React, { useState, useEffect } from 'react';
-import { FaSearchLocation, FaTint, FaMapMarkerAlt, FaMapMarkedAlt, FaHome, FaEnvelope, FaUser } from 'react-icons/fa';
+import {
+  FaSearchLocation, FaTint, FaMapMarkerAlt, FaMapMarkedAlt,
+  FaHome, FaEnvelope, FaUser, FaFileDownload
+} from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { PDFDownloadLink, Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
 
 const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
+const styles = StyleSheet.create({
+  page: { padding: 20 },
+  section: { marginBottom: 10 },
+  header: { fontSize: 18, marginBottom: 10, color: 'crimson' },
+  row: { flexDirection: 'row', marginBottom: 5 },
+  label: { width: 100, fontWeight: 'bold' },
+  value: {},
+  tableRow: { flexDirection: 'row', borderBottom: '1px solid #ccc', paddingBottom: 4, marginBottom: 4 },
+  cell: { flex: 1 }
+});
+
+const DonorPDF = ({ donors }) => (
+  <Document>
+    <Page style={styles.page}>
+      <Text style={styles.header}>Donor List</Text>
+
+      {/* Header Row */}
+      <View style={[styles.tableRow, { borderBottom: 1, borderColor: '#888', marginBottom: 6 }]}>
+        <Text style={{ width: '5%', fontWeight: 'bold' }}>#</Text>
+        <Text style={{ width: '25%', fontWeight: 'bold' }}>Name</Text>
+        <Text style={{ width: '10%', fontWeight: 'bold' }}>Blood</Text>
+        <Text style={{ width: '30%', fontWeight: 'bold' }}>Location</Text>
+        <Text style={{ width: '20%', fontWeight: 'bold' }}>Email</Text>
+      </View>
+
+      {/* Donor Rows */}
+      {donors.map((donor, i) => (
+        <View key={i} style={styles.tableRow}>
+          <Text style={{ width: '5%' }}>{i + 1}.</Text>
+          <Text style={{ width: '25%' }} wrap={false}>{donor.name}</Text>
+          <Text style={{ width: '10%' }}>{donor.bloodGroup}</Text>
+          <Text style={{ width: '30%' }} wrap={false}>
+            {donor.upazila}, {donor.district}
+          </Text>
+          <Text style={{ width: '20%' }} wrap={false}>{donor.email}</Text>
+        </View>
+      ))}
+    </Page>
+  </Document>
+);
+
 
 const SearchDonor = () => {
   const navigate = useNavigate();
@@ -20,7 +66,6 @@ const SearchDonor = () => {
   const [searched, setSearched] = useState(false);
   const [donors, setDonors] = useState([]);
 
- 
   const { data: districts = [] } = useQuery({
     queryKey: ['districts'],
     queryFn: async () => {
@@ -29,7 +74,6 @@ const SearchDonor = () => {
     },
   });
 
- 
   const { data: upazilasData = [] } = useQuery({
     queryKey: ['upazilas'],
     queryFn: async () => {
@@ -131,7 +175,7 @@ const SearchDonor = () => {
             {searched && donors.length === 0 && (
               <p className="text-sm md:text-lg font-semibold mt-4 text-red-500">Sorry, no donor found.</p>
             )}
-            <div className="mt-6 w-full flex justify-center">
+            <div className="mt-6 w-full flex justify-center gap-4">
               <button
                 onClick={() => navigate('/')}
                 className="flex gap-2 items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:px-5 md:py-3 rounded-md transition text-sm md:text-base"
@@ -139,15 +183,32 @@ const SearchDonor = () => {
                 <FaHome size={18} />
                 Home
               </button>
+
+             
             </div>
           </motion.div>
         </div>
 
-        {/* Result Section */}
+
+         {/* Result Section */}
+      
+
         {searched && donors.length > 0 && (
           <div className="mt-12">
+            
             <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-4">Search Results</h3>
-
+   <div>
+           {searched && donors.length > 0 && (
+                <PDFDownloadLink
+                  document={<DonorPDF donors={donors} />}
+                  fileName="donors.pdf"
+                  className="flex gap-2 btn btn-sm  items-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition text-sm md:text-base"
+                >
+                  <FaFileDownload />
+                  Download
+                </PDFDownloadLink>
+              )}
+         </div>
             {/* Table View */}
             <div className="hidden md:block overflow-x-auto">
               <table className="min-w-full table-auto border-collapse table-zebra border text-sm md:text-base">
