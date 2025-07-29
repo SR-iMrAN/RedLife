@@ -65,7 +65,7 @@ const AddBlog = () => {
       };
 
       const token = await user.getIdToken();
-      const response = await axios.post("http://localhost:3001/blogs", blogData, {
+      const response = await axios.post("https://red-life-server.vercel.app/blogs", blogData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

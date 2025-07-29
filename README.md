@@ -1,12 +1,49 @@
-# React + Vite
+# 🩸 RedLife — Blood Donation Platform (Frontend)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**RedLife** is a full-featured blood donation platform developed with React.js. It empowers users to register as blood donors, browse active donation requests, contribute to blog content, and even fund life-saving initiatives — all in a beautifully responsive design.
 
-Currently, two official plugins are available:
+🔴 **Live Site:** [https://redlife1.web.app/](https://redlife1.web.app/)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+---
+
+## 🚀 Key Features
+
+- 👥 Role-based access (Donor, Volunteer, Admin)
+- 📝 Blog management with rich-text editor (Jodit)
+- 📊 Dashboard-specific views for each user type
+- 📋 Donor request creation and tracking
+- 🔍 Donor search with filters (blood group, district, upazila)
+- 💬 SweetAlert2 & toast for user feedback
+- 🧾 Funding page with Stripe integration
+- 🔒 Protected routes with JWT (persistent on reload)
+- 🌍 BD Geocode-based district and upazila selector
+- 📱 Fully responsive across mobile, tablet, and desktop
+
+---
+
+## 🧰 Tech Stack
+
+- **React** with Vite
+- **Tailwind CSS** for styling
+- **TanStack Query** for efficient data fetching
+- **React Hook Form** for forms
+- **Framer Motion** for animations
+- **Jodit React** for blog editing
+
+---
+
+## 📁
+
+    ███        ▄█    █▄       ▄████████ ███▄▄▄▄      ▄█   ▄█▄      ▄██   ▄    ▄██████▄  ███    █▄  
+▀█████████▄   ███    ███     ███    ███ ███▀▀▀██▄   ███ ▄███▀      ███   ██▄ ███    ███ ███    ███ 
+   ▀███▀▀██   ███    ███     ███    ███ ███   ███   ███▐██▀        ███▄▄▄███ ███    ███ ███    ███ 
+    ███   ▀  ▄███▄▄▄▄███▄▄   ███    ███ ███   ███  ▄█████▀         ▀▀▀▀▀▀███ ███    ███ ███    ███ 
+    ███     ▀▀███▀▀▀▀███▀  ▀███████████ ███   ███ ▀▀█████▄         ▄██   ███ ███    ███ ███    ███ 
+    ███       ███    ███     ███    ███ ███   ███   ███▐██▄        ███   ███ ███    ███ ███    ███ 
+    ███       ███    ███     ███    ███ ███   ███   ███ ▀███▄      ███   ███ ███    ███ ███    ███ 
+   ▄████▀     ███    █▀      ███    █▀   ▀█   █▀    ███   ▀█▀       ▀█████▀   ▀██████▀  ████████▀  
+                                                    ▀                                              

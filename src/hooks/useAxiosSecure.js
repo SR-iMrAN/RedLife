@@ -5,7 +5,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import app from "../firebase/firebase.config";
 
 const axiosSecure = axios.create({
-  baseURL: "http://localhost:3001",
+  baseURL: "https://red-life-server.vercel.app",
 });
 
 const useAxiosSecure = () => {

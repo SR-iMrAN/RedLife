@@ -34,7 +34,7 @@ const axiosSecure = useAxiosSecure();
   useEffect(() => {
     const fetchBlog = async () => {
       try {
-        // const response = await axios.get(`http://localhost:3001/blogs/${id}`);
+        // const response = await axios.get(`https://red-life-server.vercel.app/blogs/${id}`);
         const response = await axiosSecure.get(`/blogs/${id}`);
 
         const blog = response.data;
@@ -101,7 +101,7 @@ const axiosSecure = useAxiosSecure();
 
     //   const token = await user.getIdToken();
     //   const response = await axios.patch(
-    //     `http://localhost:3001/blogs/${id}`,
+    //     `https://red-life-server.vercel.app/blogs/${id}`,
     //     blogData,
     //     {
     //       headers: {

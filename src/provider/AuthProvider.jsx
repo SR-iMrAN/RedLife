@@ -22,7 +22,7 @@ const AuthProvider = ({ children }) => {
 
 
   const axiosSecure = axios.create({
-    baseURL: 'http://localhost:3001/', 
+    baseURL: 'https://red-life-server.vercel.app/', 
   });
 
   

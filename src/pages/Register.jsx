@@ -116,7 +116,7 @@ const Register = () => {
   };
 
   const saveUserToDB = (userData) => {
-    fetch('http://localhost:3001/users', {
+    fetch('https://red-life-server.vercel.app/users', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userData),
