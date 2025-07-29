@@ -5,16 +5,28 @@ import Swal from 'sweetalert2';
 import { AuthContext } from '../provider/AuthProvider';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
-import { MdLock, MdEmail, MdVisibility, MdVisibilityOff } from 'react-icons/md';
+import {
+  MdLock,
+  MdEmail,
+  MdVisibility,
+  MdVisibilityOff,
+  MdLockOutline,
+} from 'react-icons/md';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import {
+  getAuth,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updatePassword,
+} from 'firebase/auth';
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
-  const { signIn, setUser, signInWithGoogle } = useContext(AuthContext);
+  const { signIn, setUser, signInWithGoogle, user } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || "/";
+  const from = location.state?.from?.pathname;
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -28,29 +40,18 @@ const Login = () => {
       .then((result) => {
         const user = result.user;
         setUser(user);
-        if (from === "/") {
-          Swal.fire({
-            title: 'Login Successful',
-            text: `Welcome back, ${user.displayName || 'User'}!`,
-            icon: 'success',
-            showDenyButton: true,
-            confirmButtonText: 'Go Home',
-            denyButtonText: 'Stay Here',
-          }).then((result) => {
-            if (result.isConfirmed) {
-              navigate("/", { replace: true });
-            }
-          });
-        } else {
-          Swal.fire({
-            icon: 'success',
-            title: 'Login Successful',
-            text: `Welcome back, ${user.displayName || 'User'}!`,
-            timer: 1500,
-            showConfirmButton: false,
-          });
-          navigate(from, { replace: true });
-        }
+
+        const redirectTo = from?.startsWith('/dashboard') ? '/dashboard' : from || '/';
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Login Successful',
+          text: `Welcome back, ${user.displayName || 'User'}!`,
+          timer: 1500,
+          showConfirmButton: false,
+        });
+
+        navigate(redirectTo, { replace: true });
       })
       .catch((error) => {
         Swal.fire({
@@ -66,29 +67,18 @@ const Login = () => {
       .then((result) => {
         const user = result.user;
         setUser(user);
-        if (from === "/") {
-          Swal.fire({
-            title: 'Login Successful',
-            text: `Welcome, ${user.displayName || 'User'}!`,
-            icon: 'success',
-            showDenyButton: true,
-            confirmButtonText: 'Go Home',
-            denyButtonText: 'Stay Here',
-          }).then((result) => {
-            if (result.isConfirmed) {
-              navigate("/", { replace: true });
-            }
-          });
-        } else {
-          Swal.fire({
-            icon: 'success',
-            title: 'Login Successful',
-            text: `Welcome, ${user.displayName || 'User'}!`,
-            timer: 1500,
-            showConfirmButton: false,
-          });
-          navigate(from, { replace: true });
-        }
+
+        const redirectTo = from?.startsWith('/dashboard') ? '/dashboard' : from || '/';
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Login Successful',
+          text: `Welcome, ${user.displayName || 'User'}!`,
+          timer: 1500,
+          showConfirmButton: false,
+        });
+
+        navigate(redirectTo, { replace: true });
       })
       .catch((error) => {
         toast.error(
@@ -99,6 +89,64 @@ const Login = () => {
           { autoClose: 3000 }
         );
       });
+  };
+
+  const handleResetPassword = async () => {
+    const { value: formValues } = await Swal.fire({
+      title: '<strong>Reset Password</strong>',
+      html:
+        `<div style="display: flex; flex-direction: column; gap: 10px;">` +
+        `<label style="display: flex; align-items: center; gap: 5px;"><i>${MdLockOutline()}</i> Current Password</label>` +
+        `<input id="swal-input1" type="password" class="swal2-input" placeholder="Current Password">` +
+        `<label style="display: flex; align-items: center; gap: 5px;"><i>${MdLockOutline()}</i> New Password</label>` +
+        `<input id="swal-input2" type="password" class="swal2-input" placeholder="New Password">` +
+        `<label style="display: flex; align-items: center; gap: 5px;"><i>${MdLockOutline()}</i> Confirm Password</label>` +
+        `<input id="swal-input3" type="password" class="swal2-input" placeholder="Confirm Password">` +
+        `</div>`,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Reset Password',
+      preConfirm: () => {
+        const current = document.getElementById('swal-input1').value;
+        const newPass = document.getElementById('swal-input2').value;
+        const confirm = document.getElementById('swal-input3').value;
+
+        if (!current || !newPass || !confirm) {
+          Swal.showValidationMessage('All fields are required');
+          return false;
+        }
+
+        if (newPass !== confirm) {
+          Swal.showValidationMessage('New passwords do not match');
+          return false;
+        }
+
+        return { current, newPass };
+      },
+    });
+
+    if (formValues) {
+      try {
+        const auth = getAuth();
+        const currentUser = auth.currentUser;
+
+        if (!currentUser) {
+          return Swal.fire('Error', 'User not logged in', 'error');
+        }
+
+        const credential = EmailAuthProvider.credential(
+          currentUser.email,
+          formValues.current
+        );
+
+        await reauthenticateWithCredential(currentUser, credential);
+        await updatePassword(currentUser, formValues.newPass);
+
+        Swal.fire('Success', 'Password has been reset successfully!', 'success');
+      } catch (error) {
+        Swal.fire('Error', error.message || 'Something went wrong', 'error');
+      }
+    }
   };
 
   return (
@@ -141,7 +189,7 @@ const Login = () => {
                 <MdLock /> Password
               </label>
               <input
-                type={showPassword ? "text" : "password"}
+                type={showPassword ? 'text' : 'password'}
                 name="password"
                 placeholder="Enter password"
                 className="input input-bordered w-full pr-10"
@@ -152,17 +200,22 @@ const Login = () => {
               <span
                 onClick={() => setShowPassword((prev) => !prev)}
                 className="absolute right-3 top-10 text-gray-600 cursor-pointer"
-                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
-                {showPassword ? <MdVisibilityOff size={24} /> : <MdVisibility size={24} />}
+                {showPassword ? (
+                  <MdVisibilityOff size={24} />
+                ) : (
+                  <MdVisibility size={24} />
+                )}
               </span>
               <div className="text-right mt-1">
-                <Link
-                  to={`/auth/forgot-password?email=${formData.email || ''}`}
+                <button
+                  type="button"
+                  onClick={handleResetPassword}
                   className="text-blue-600 hover:underline text-sm"
                 >
                   Forgot Password?
-                </Link>
+                </button>
               </div>
             </div>
             <div className="flex items-center">
@@ -176,7 +229,10 @@ const Login = () => {
 
           <div className="divider">or login with</div>
 
-          <button onClick={handleGoogleLogin} className="btn btn-outline w-full flex items-center gap-2">
+          <button
+            onClick={handleGoogleLogin}
+            className="btn btn-outline w-full flex items-center gap-2"
+          >
             <FcGoogle className="text-xl" />
             Continue with Google
           </button>
