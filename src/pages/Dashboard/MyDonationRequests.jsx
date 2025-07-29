@@ -10,7 +10,7 @@ import {
   FaSpinner,
   FaTint,
 } from "react-icons/fa";
-import districts from "../../assets/districts.json"; // assuming district name mapping
+import districts from "../../assets/districts.json"; 
 
 const statusIcons = {
   pending: <FaClock className="text-yellow-500" />,
@@ -38,10 +38,11 @@ const MyDonationRequests = () => {
     enabled: !!user?.email,
   });
 
-  const getDistrictName = (districtId) => {
-    const found = districts.find((d) => d.id == districtId); // use == in case of string vs number
-    return found?.name || "Unknown";
-  };
+const getDistrictName = (name) => {
+  const found = districts.find((d) => d.name === name);
+  return found?.name || "Unknown";
+};
+
 
   const handleFilterChange = (e) => {
     setStatusFilter(e.target.value);
