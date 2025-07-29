@@ -47,7 +47,7 @@ const Register = () => {
   const { data: upazilas = [], isError: upazilaError } = useQuery({
     queryKey: ['upazilas'],
     queryFn: () =>
-      fetch('/public/assets/upazilas.json').then(res => {
+      fetch('/assets/upazilas.json').then(res => {
         if (!res.ok) throw new Error('Failed to fetch upazilas');
         return res.json();
       }),
