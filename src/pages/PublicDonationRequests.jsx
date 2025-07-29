@@ -35,8 +35,8 @@ const PublicDonationRequests = () => {
       ) : paginatedData.length === 0 ? (
         <p className="text-center">No pending donation requests found.</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white shadow rounded">
+        <div className="overflow-x-scroll scrollbar-thin scrollbar-thumb-red-500 scrollbar-track-gray-200 sm:overflow-scroll">
+          <table className="min-w-full sm:text-sm bg-white shadow rounded">
             <thead>
               <tr className="bg-gray-100 text-left text-sm uppercase text-gray-600">
                 <th className="p-3">Recipient</th>

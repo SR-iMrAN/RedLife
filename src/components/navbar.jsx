@@ -64,7 +64,8 @@ const Navbar = () => {
   return (
     <nav className="bg-white shadow sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-        <div className='flex gap-3 items-center'>
+        <div className='flex gap-2 items-center'>
+          <div><img src="https://i.ibb.co/vvD2NqWH/RedLife.png" alt="" className='h-12' /></div>
           <Link to="/" className="text-2xl font-bold text-red-600">Red<span className="text-green-600">L</span>i<span className="text-green-600">fe</span></Link>
         </div>
 

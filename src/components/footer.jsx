@@ -43,8 +43,9 @@ const Footer = () => {
 
         {/* Logo & Tagline */}
         <div>
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-2xl font-bold text-red-600">RedLife</span>
+          <div className="flex items-center gap-2 mb-2">
+            <div><img src="https://i.ibb.co/vvD2NqWH/RedLife.png" alt="" className='h-12' /></div>
+            <span className="text-2xl font-bold text-red-600">RedL<span className='text-green-500'>i</span>fe</span>
           </div>
           <p className="text-sm">
             Saving lives, one drop at a time. Be a real-life hero by donating blood.
