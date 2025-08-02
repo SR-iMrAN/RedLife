@@ -82,7 +82,12 @@ const ManageUsers = () => {
   };
 
   if (isLoading) {
-    return <div className="p-4">Loading users...<span className="loading loading-bars loading-lg"></span></div>;
+    return (
+      <div className="p-4">
+        Loading users...
+        <span className="loading loading-bars loading-lg"></span>
+      </div>
+    );
   }
 
   return (
@@ -91,6 +96,7 @@ const ManageUsers = () => {
         <FaGlobe /> All Users
       </h2>
 
+      {/* Filter Buttons */}
       <div className="mb-4 flex gap-2">
         <button
           onClick={() => {
@@ -112,7 +118,10 @@ const ManageUsers = () => {
             statusFilter === "active" ? "btn-primary" : "btn-outline"
           } flex items-center gap-1`}
         >
-          <span className="text-green-400"><FaCheckCircle /></span> Active
+          <span className="text-green-400">
+            <FaCheckCircle />
+          </span>{" "}
+          Active
         </button>
         <button
           onClick={() => {
@@ -123,11 +132,96 @@ const ManageUsers = () => {
             statusFilter === "blocked" ? "btn-primary" : "btn-outline"
           } flex items-center gap-1`}
         >
-          <span  className="text-red-400"> <FaBan /> </span> Blocked
+          <span className="text-red-400">
+            <FaBan />
+          </span>{" "}
+          Blocked
         </button>
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Mobile Card View */}
+      <div className="grid gap-4 lg:hidden">
+        {currentUsers.map((user) => (
+          <div key={user._id} className="bg-base-200 p-4 rounded-xl shadow">
+            <div className="flex items-center gap-4">
+              <div className="avatar">
+                <div className="w-14 rounded-full">
+                  <img
+                    src={user.photoURL || "/default-avatar.png"}
+                    alt="avatar"
+                    onError={(e) =>
+                      (e.currentTarget.src = "/default-avatar.png")
+                    }
+                  />
+                </div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">{user.name}</h3>
+                <p className="text-sm text-gray-600">{user.email}</p>
+                <p className="text-sm capitalize">
+                  Role: {user.role || "donor"}
+                </p>
+                <p className="text-sm capitalize">
+                  Status: {user.status || "active"}
+                </p>
+              </div>
+            </div>
+
+            <div className="dropdown dropdown-top mt-3">
+              <label tabIndex={0} className="btn btn-sm">
+                <FaEllipsisV />
+              </label>
+              <ul
+                tabIndex={0}
+                className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52 space-y-1"
+              >
+                {user.status === "active" ? (
+                  <li>
+                    <button
+                      onClick={() => handleStatusChange(user._id, "blocked")}
+                      className="flex items-center gap-2"
+                    >
+                      <FaUserLock /> Block
+                    </button>
+                  </li>
+                ) : (
+                  <li>
+                    <button
+                      onClick={() => handleStatusChange(user._id, "active")}
+                      className="flex items-center gap-2"
+                    >
+                      <FaUserCheck /> Unblock
+                    </button>
+                  </li>
+                )}
+                {user.role !== "volunteer" && (
+                  <li>
+                    <button
+                      onClick={() => handleMakeRole(user._id, "volunteer")}
+                      className="flex items-center gap-2"
+                    >
+                      <FaUserEdit /> Make Volunteer
+                    </button>
+                  </li>
+                )}
+                {user.role !== "admin" && (
+                  <li>
+                    <button
+                      onClick={() => handleMakeRole(user._id, "admin")}
+                      className="flex items-center gap-2"
+                    >
+                      <FaUserShield /> Make Admin
+                    </button>
+                  </li>
+                )}
+              </ul>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="overflow-x-auto hidden lg:block">
         <table className="table table-zebra">
           <thead>
             <tr>
@@ -157,8 +251,8 @@ const ManageUsers = () => {
                 </td>
                 <td>{user.name}</td>
                 <td>{user.email}</td>
-                <td className="capitalize">    {user.role || "donor"}</td>
-                <td className="capitalize">  {user.status || "active"}</td>
+                <td className="capitalize">{user.role || "donor"}</td>
+                <td className="capitalize">{user.status || "active"}</td>
                 <td>
                   <div className="dropdown dropdown-left">
                     <label tabIndex={0} className="btn btn-sm m-1">
@@ -222,6 +316,7 @@ const ManageUsers = () => {
         </table>
       </div>
 
+      {/* Pagination */}
       {totalPages > 1 && (
         <div className="mt-4 flex justify-center">
           <div className="join">

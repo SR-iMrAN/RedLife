@@ -1,10 +1,14 @@
-import { FaPhoneAlt, FaEnvelope, FaMapMarkerAlt, FaUserPlus, FaSearch, FaTint } from 'react-icons/fa';
-import { MdVolunteerActivism, MdEmail, MdPhone, MdLocationOn } from 'react-icons/md';
+import {
+  FaPhoneAlt, FaEnvelope, FaMapMarkerAlt, FaUserPlus, FaSearch, FaTint,
+} from 'react-icons/fa';
+import {
+  MdVolunteerActivism, MdEmail, MdPhone, MdLocationOn,
+} from 'react-icons/md';
 import { motion } from 'framer-motion';
 import Swal from 'sweetalert2';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { useContext } from "react";
-import { AuthContext } from "../provider/AuthProvider"; 
+import { AuthContext } from "../provider/AuthProvider";
 import { useNavigate } from "react-router-dom";
 
 const fadeUp = {
@@ -26,47 +30,47 @@ const Home = () => {
     });
     e.target.reset();
   };
-const { user } = useContext(AuthContext);
-const navigate = useNavigate();
 
-const handleAlreadyDonor = () => {
-  if (user) {
-    Swal.fire({
-      icon: 'success',
-      title: 'Thank you!',
-      text: 'You are already a valued donor.',
-      confirmButtonColor: '#dc2626',
-    });
-  } else {
-    navigate("/auth/register"); 
-  }
-};
+  const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
 
+  const handleAlreadyDonor = () => {
+    if (user) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Thank you!',
+        text: 'You are already a valued donor.',
+        confirmButtonColor: '#dc2626',
+      });
+    } else {
+      navigate("/auth/register");
+    }
+  };
 
   return (
-    <div className="text-gray-800">
+    <div className="text-gray-800 overflow-x-hidden">
       {/* Banner */}
       <section className="bg-red-100 py-16 px-4 md:px-20 flex flex-col md:flex-row items-center justify-between gap-8">
         <motion.div
-          className="space-y-6"
+          className="space-y-6 text-center md:text-left"
           initial={{ x: -100, opacity: 0 }}
           whileInView={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <h1 className="text-4xl md:text-5xl font-bold text-red-600 leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-red-600 leading-tight">
             Be a Lifesaver, <br /> Donate Blood Today
           </h1>
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
             <button
               onClick={handleAlreadyDonor}
-              className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full flex items-center gap-2 transition"
+              className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full flex items-center justify-center gap-2 transition"
             >
               <FaUserPlus /> Join as a Donor
             </button>
             <a
               href="/search"
-              className="border-2 border-red-600 text-red-600 px-6 py-3 rounded-full flex items-center gap-2 hover:bg-red-600 hover:text-white transition"
+              className="border-2 border-red-600 text-red-600 px-6 py-3 rounded-full flex items-center justify-center gap-2 hover:bg-red-600 hover:text-white transition"
             >
               <FaSearch /> Search Donors
             </a>
@@ -75,7 +79,7 @@ const handleAlreadyDonor = () => {
 
         {/* Banner Image */}
         <motion.div
-          className="md:w-1/2 mt-8 md:mt-0 flex justify-center"
+          className="w-full md:w-1/2 mt-8 md:mt-0 flex justify-center"
           initial={{ scale: 0.9, opacity: 0 }}
           whileInView={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.8 }}
@@ -85,7 +89,7 @@ const handleAlreadyDonor = () => {
             src="https://lottie.host/02f30352-fc0f-461c-ac06-4ca25271784c/XfHlYvXM7r.lottie"
             autoplay
             loop
-            style={{ width: '750px', height: 'auto' }}
+            style={{ width: '100%', maxWidth: '700px', height: 'auto' }}
           />
         </motion.div>
       </section>
@@ -93,7 +97,7 @@ const handleAlreadyDonor = () => {
       {/* Why Donate Section */}
       <motion.section className="py-16 px-4 md:px-20 bg-white" {...fadeUp}>
         <h2 className="text-3xl font-bold text-center text-red-600 mb-10">Why Donate Blood?</h2>
-        <div className="grid md:grid-cols-3 gap-8 text-center">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
           <motion.div className="p-6 bg-red-50 rounded-xl shadow-md hover:shadow-lg transition" {...fadeUp}>
             <FaTint className="text-5xl text-red-500 mx-auto mb-4" />
             <h3 className="text-xl font-semibold mb-2">Save Lives</h3>
@@ -116,7 +120,7 @@ const handleAlreadyDonor = () => {
 
       {/* Contact Section */}
       <motion.section className="bg-gray-100 py-16 px-4" id="contact" {...fadeUp}>
-        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           {/* Contact Info */}
           <motion.div {...fadeUp}>
             <h2 className="text-3xl font-bold text-red-700 mb-4">Contact Us</h2>

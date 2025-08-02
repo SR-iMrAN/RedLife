@@ -19,6 +19,10 @@ import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import Swal from "sweetalert2";
+import { Cardio } from 'ldrs/react'
+import 'ldrs/react/Cardio.css'
+
+
 
 const DashboardHome = () => {
   const { user, role } = useAuth();
@@ -173,7 +177,12 @@ const DashboardHome = () => {
 
       {role === "donor" && (
         <>
-          {isLoading && <p>Loading your recent requests...</p>}
+          {isLoading && <p>Loading your recent requests... <span><Cardio
+  size="50"
+  stroke="4"
+  speed="2"
+  color="red" 
+/></span></p>}
 
           {!isLoading && requests.length === 0 && (
             <div className="text-center text-gray-500 mt-8">No recent donation requests found.</div>
@@ -183,7 +192,7 @@ const DashboardHome = () => {
             <>
               <h3 className="text-xl font-semibold mt-6">Your Recent Donation Requests</h3>
 
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto hidden lg:block">
                 <table className="min-w-full bg-white shadow rounded mt-4">
                   <thead>
                     <tr className="bg-gray-100 text-left text-sm uppercase text-gray-600">
@@ -297,13 +306,105 @@ const DashboardHome = () => {
                   </tbody>
                 </table>
 
-                <Link
+                {/* <Link
                   to="/dashboard/my-donation-requests"
                   className="mt-4 inline-block bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
                 >
                   View My All Requests
-                </Link>
+                </Link> */}
               </div>
+               {/* CARD VIEW - Mobile only */}
+              <div className="lg:hidden mt-4 space-y-4">
+                {requests.slice(0, 5).map((r) => (
+                  <motion.div
+                    key={r._id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="bg-white rounded-xl shadow p-4 space-y-2"
+                  >
+                    <div className="flex justify-between">
+                      <div>
+                        <h4 className="font-semibold text-lg text-gray-800">{r.recipientName}</h4>
+                        <p className="text-sm text-gray-500">
+                          {r.recipientDistrict}, {r.recipientUpazila}
+                        </p>
+                      </div>
+                      <span
+                        className={`text-xs px-2 py-1 rounded text-white capitalize ${
+                          r.status === "pending"
+                            ? "bg-yellow-500"
+                            : r.status === "inprogress"
+                            ? "bg-blue-500"
+                            : r.status === "done"
+                            ? "bg-green-600"
+                            : "bg-red-600"
+                        }`}
+                      >
+                        {r.status}
+                      </span>
+                    </div>
+
+                    <p className="text-sm"><strong>Date:</strong> {r.donationDate}</p>
+                    <p className="text-sm"><strong>Time:</strong> {r.donationTime}</p>
+                    <p className="text-sm">
+                      <strong>Blood Group:</strong>{" "}
+                      <span className="text-red-600 font-bold">{r.bloodGroup}</span>
+                    </p>
+                    {r.status === "inprogress" && (
+                      <div className="text-sm">
+                        <p><strong>Donor:</strong> {r.requesterName}</p>
+                        <p><strong>Email:</strong> {r.requesterEmail}</p>
+                      </div>
+                    )}
+
+                    {/* Actions */}
+                    <div className="flex flex-wrap gap-2 pt-2 text-sm">
+                      {r.status === "inprogress" && (
+                        <>
+                          <button
+                            onClick={() => handleStatusChange(r._id, "done")}
+                            className="flex items-center gap-1 text-green-600 border border-green-600 px-3 py-1 rounded"
+                          >
+                            <FaCheck /> Done
+                          </button>
+                          <button
+                            onClick={() => handleStatusChange(r._id, "canceled")}
+                            className="flex items-center gap-1 text-red-600 border border-red-600 px-3 py-1 rounded"
+                          >
+                            <FaTimes /> Cancel
+                          </button>
+                        </>
+                      )}
+                      <Link
+                        to={`/dashboard/edit-donation-request/${r._id}`}
+                        className="flex items-center gap-1 text-yellow-600 border border-yellow-600 px-3 py-1 rounded"
+                      >
+                        <FaEdit /> Edit
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(r._id)}
+                        className="flex items-center gap-1 text-red-600 border border-red-600 px-3 py-1 rounded"
+                      >
+                        <FaTrash /> Delete
+                      </button>
+                      <Link
+                        to={`/dashboard/request/${r._id}`}
+                        className="flex items-center gap-1 text-blue-600 border border-blue-600 px-3 py-1 rounded"
+                      >
+                        <FaEye /> View
+                      </Link>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              <Link
+                to="/dashboard/my-donation-requests"
+                className="mt-4 inline-block bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+              >
+                View My All Requests
+              </Link>
             </>
           )}
         </>

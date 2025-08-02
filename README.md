@@ -5,9 +5,7 @@
 🔴 **Live Site:** [https://redlife1.web.app/](https://redlife1.web.app/)
 
 ---
- Admin
-username : redlife@admin.com
-password :Redlife2025
+ -->
 
 
 ---
