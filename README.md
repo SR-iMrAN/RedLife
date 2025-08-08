@@ -34,10 +34,7 @@ RedLife is a full-featured blood donation platform developed with React.js. It e
 
 ---
 
-## 🖼️ Screenshot
 
-![RedLife Screenshot](./screenshot.png)  
-> *(Replace `screenshot.png` with your actual screenshot file in the repo root or public folder)*
 
 ---
 
