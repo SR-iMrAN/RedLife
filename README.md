@@ -79,7 +79,7 @@ npm run dev
 Open your browser and visit:
 
 
-http://localhost:3000
+http://localhost:3000 (Might be different in your case)
 
 ---
 
